@@ -1,0 +1,100 @@
+name: Deploy Passnavle App to Server
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, bcmath, pdo, tokenizer, openssl
+
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install NPM Dependencies
+        run: npm install
+
+      - name: Build Frontend Assets
+        run: npm run build
+
+      - name: Test SSH Connection (Debug Step)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002
+          timeout: 60s
+          script: echo "✅ SSH connection successful"
+
+      - name: Upload `public/` to `public_html/`
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002
+          source: "public/*"
+          target: "/home/u943214770/domains/passnavle.com/public_html"
+          strip_components: 1
+          timeout: 60s
+
+      - name: Upload Laravel App (excluding public) to domain root
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002
+          source: "."
+          target: "/home/u943214770/domains/passnavle.com"
+          strip_components: 0
+          timeout: 60s
+
+      - name: Run Laravel Setup Commands
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002
+          timeout: 60s
+          script: |
+            cd /home/u943214770/domains/passnavle.com
+            cp .env.example .env
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan key:generate
+            php artisan migrate --force
+            php artisan app:update-roles-and-permissions
+
+      - name: Move `build` folder and fix `manifest.json`
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 65002
+          timeout: 60s
+          script: |
+            cd /home/u943214770/domains/passnavle.com/public_html
+            cp -r build ../public/
+            if [ -f ../public/build/.vite/manifest.json ]; then
+              mv ../public/build/.vite/manifest.json ../public/build/manifest.json
+            fi
