@@ -134,12 +134,12 @@ jobs:
             SESSION_LIFETIME=120
             
             MAIL_MAILER=smtp
-            MAIL_HOST=mailpit
-            MAIL_PORT=1025
-            MAIL_USERNAME=null
-            MAIL_PASSWORD=null
-            MAIL_ENCRYPTION=null
-            MAIL_FROM_ADDRESS=hello@another-go.com
+            MAIL_HOST=smtp.hostinger.com
+            MAIL_PORT=465
+            MAIL_USERNAME=anothergo@admin.com
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            MAIL_ENCRYPTION=ssl
+            MAIL_FROM_ADDRESS=anothergo@admin.com
             MAIL_FROM_NAME="Another-Go"
             EOF
             
