@@ -155,15 +155,15 @@ jobs:
             APP_ENV=production
             APP_KEY=
             APP_DEBUG=false
-            APP_URL="${{ secrets.APP_URL || 'https://another-go.com' }}"
+            APP_URL=https://another-go.com
             
             LOG_CHANNEL=stack
             LOG_DEPRECATIONS_CHANNEL=null
             LOG_LEVEL=error
             
             DB_CONNECTION=mysql
-            DB_HOST="${{ secrets.DB_HOST || '127.0.0.1' }}"
-            DB_PORT="${{ secrets.DB_PORT || '3306' }}"
+            DB_HOST="${{ secrets.DB_HOST}}"
+            DB_PORT="${{ secrets.DB_PORT}}"
             DB_DATABASE="${{ secrets.DB_DATABASE }}"
             DB_USERNAME="${{ secrets.DB_USERNAME }}"
             DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -181,14 +181,14 @@ jobs:
             REDIS_PASSWORD=null
             REDIS_PORT=6379
             
-            MAIL_MAILER="${{ secrets.MAIL_MAILER || 'smtp' }}"
-            MAIL_HOST="${{ secrets.MAIL_HOST || 'mailpit' }}"
-            MAIL_PORT="${{ secrets.MAIL_PORT || '1025' }}"
-            MAIL_USERNAME="${{ secrets.MAIL_USERNAME || 'null' }}"
-            MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD || 'null' }}"
-            MAIL_ENCRYPTION="${{ secrets.MAIL_ENCRYPTION || 'null' }}"
-            MAIL_FROM_ADDRESS="${{ secrets.MAIL_FROM_ADDRESS || 'hello@another-go.com' }}"
-            MAIL_FROM_NAME="${{ secrets.MAIL_FROM_NAME || 'Another-Go' }}"
+            MAIL_MAILER="smtp"
+            MAIL_HOST="smtp.hostinger.com"
+            MAIL_PORT="465"
+            MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
+            MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+            MAIL_ENCRYPTION="ssl"
+            MAIL_FROM_ADDRESS="${{ secrets.MAIL_USERNAME }}"
+            MAIL_FROM_NAME="Another-Go"
             
             AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID || '' }}"
             AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY || '' }}"
