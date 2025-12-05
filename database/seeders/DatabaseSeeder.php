@@ -11,14 +11,9 @@ class DatabaseSeeder extends Seeder
     {
         
         User::factory()->create([
-            'name' => 'Test User',
+            'name' => 'Super Admin',
             'email' => 'admin@anothergo.com',
             'role' => 'admin',
-        ]);
-
-        // Call other seeders
-        $this->call([
-            FuturisticItemSeeder::class,
         ]);
     }
 }
