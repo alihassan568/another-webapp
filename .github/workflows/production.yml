@@ -1,4 +1,4 @@
-name: Deploy Passnavle App to Server
+name: Deploy Another-Go App to Server
 
 on:
   push:
@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 65002
           source: "public/*"
-          target: "/home/u943214770/domains/passnavle.com/public_html"
+          target: "/home/u404772588/domains/another-go.com/public_html"
           strip_components: 1
           timeout: 60s
 
@@ -63,7 +63,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 65002
           source: "."
-          target: "/home/u943214770/domains/passnavle.com"
+          target: "/home/u404772588/domains/another-go.com"
           strip_components: 0
           timeout: 60s
 
@@ -93,7 +93,7 @@ jobs:
           port: 65002
           timeout: 60s
           script: |
-            cd /home/u943214770/domains/passnavle.com/public_html
+            cd /home/u404772588/domains/another-go.com/public_html
             cp -r build ../public/
             if [ -f ../public/build/.vite/manifest.json ]; then
               mv ../public/build/.vite/manifest.json ../public/build/manifest.json
