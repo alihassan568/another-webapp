@@ -107,7 +107,7 @@
                                                     </a>
                                                     @endif
                                                     @if($item['status'] == 'pending' || $item['status'] == 'approved')
-                                                    <a href="{{ route('admin.item.reject',$item['id']) }}"
+                                                    <a href="{{ route('admin.item.reject.form',$item['id']) }}"
                                                         class="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white text-xs px-3 py-1 rounded">
                                                         Reject
                                                     </a>

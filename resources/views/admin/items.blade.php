@@ -207,7 +207,7 @@
                                 
                                 @if($item['status'] == 'pending' || $item['status'] == 'approved')
                                 <x-action-button 
-                                    href="{{ route('admin.item.reject', $item['id']) }}" 
+                                    href="{{ route('admin.item.reject.form', $item['id']) }}" 
                                     variant="danger" 
                                     size="xs"
                                     icon='<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>'>

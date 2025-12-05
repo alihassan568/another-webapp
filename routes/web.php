@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::controller(ItemController::class)->group(function () {
         Route::get('/admin/items', 'index')->name('admin.items');
         Route::get('admin/item/accept/{id}','accept')->name('admin.item.accept');
-        Route::get('admin/item/reject/{id}','reject_item')->name('admin.item.reject');
+        Route::get('admin/item/reject/{id}','reject_item')->name('admin.item.reject.form');
         Route::post('admin/item/reject/{id}','reject')->name('admin.item.reject');
         Route::post('admin/item/filter','search')->name('admin.items.filter');
     });
