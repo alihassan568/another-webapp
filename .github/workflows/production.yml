@@ -33,15 +33,42 @@ jobs:
       - name: Build Frontend Assets
         run: npm run build
 
+      - name: Debug Network Connection
+        run: |
+          echo "Testing network connectivity to host..."
+          ping -c 3 ${{ secrets.SSH_HOST }} || echo "Ping failed"
+          echo "Testing port connectivity..."
+          timeout 10 bash -c "</dev/tcp/${{ secrets.SSH_HOST }}/65002" && echo "Port 65002 is open" || echo "Port 65002 is not accessible"
+
       - name: Test SSH Connection (Debug Step)
+        continue-on-error: true
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
+          timeout: 120s
+          command_timeout: 30s
+          script: |
+            echo "✅ SSH connection successful on port 65002"
+            echo "Server time: $(date)"
+            echo "Working directory: $(pwd)"
+            echo "User: $(whoami)"
+
+      - name: Test SSH Connection on Standard Port (Fallback)
+        if: failure()
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
           timeout: 60s
-          script: echo "✅ SSH connection successful"
+          script: |
+            echo "✅ SSH connection successful on port 22"
+            echo "Note: Using standard SSH port as fallback"
 
       - name: Upload `public/` to `public_html/`
         uses: appleboy/scp-action@v0.1.4
@@ -53,7 +80,7 @@ jobs:
           source: "public/*"
           target: "/home/u404772588/domains/another-go.com/public_html"
           strip_components: 1
-          timeout: 60s
+          timeout: 180s
 
       - name: Upload Laravel App (excluding public) to domain root
         uses: appleboy/scp-action@v0.1.4
@@ -65,7 +92,7 @@ jobs:
           source: "."
           target: "/home/u404772588/domains/another-go.com"
           strip_components: 0
-          timeout: 60s
+          timeout: 180s
 
       - name: Run Laravel Setup Commands
         uses: appleboy/ssh-action@v1.0.0
@@ -74,7 +101,8 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
-          timeout: 60s
+          timeout: 300s
+          command_timeout: 10m
           script: |
             cd /home/u404772588/domains/another-go.com
             
@@ -143,7 +171,8 @@ jobs:
             
             echo "Deployment completed - check logs if database connection failed"
 
-      - name: Move `build` folder and fix `manifest.json`
+      - name: Create deployment status file
+        continue-on-error: true
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -151,6 +180,21 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
           timeout: 60s
+          script: |
+            cd /home/u404772588/domains/another-go.com
+            echo "Deployment completed at $(date)" > deployment_status.txt
+            echo "Commit: ${{ github.sha }}" >> deployment_status.txt
+            echo "Branch: ${{ github.ref_name }}" >> deployment_status.txt
+
+      - name: Move `build` folder and fix `manifest.json`
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 65002
+          timeout: 120s
+          command_timeout: 2m
           script: |
             cd /home/u404772588/domains/another-go.com/public_html
             cp -r build ../public/ 2>/dev/null || echo "No build folder found"
