@@ -38,7 +38,8 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
           timeout: 60s
           script: echo "✅ SSH connection successful"
@@ -76,7 +77,7 @@ jobs:
           port: 65002
           timeout: 60s
           script: |
-            cd /home/u943214770/domains/passnavle.com
+            cd /home/u404772588/domains/another-go.com
             cp .env.example .env
             php artisan config:clear
             php artisan cache:clear
@@ -89,7 +90,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
           timeout: 60s
           script: |
