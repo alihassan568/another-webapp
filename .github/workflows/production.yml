@@ -94,9 +94,9 @@ jobs:
             DB_CONNECTION=mysql
             DB_HOST=${{ secrets.DB_HOST }}
             DB_PORT=3306
-            DB_DATABASE=${{ secrets.DB_DATABASE }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_DATABASE=u404772588_anothergo
+            DB_USERNAME=u404772588_anothergo
+            DB_PASSWORD=ChangeAli@123
             
             BROADCAST_DRIVER=log
             CACHE_DRIVER=file

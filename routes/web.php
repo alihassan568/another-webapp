@@ -18,9 +18,7 @@ use App\Http\Controllers\AdminCommissionController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
 
 Route::get('/admin/commission-settings', [AdminCommissionController::class, 'index'])->name('admin.commission.settings');
 Route::post('/admin/commission-settings', [AdminCommissionController::class, 'update'])->name('admin.commission.settings.update');
