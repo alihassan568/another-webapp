@@ -7,23 +7,26 @@ use Illuminate\Http\Request;
 use App\Models\Item;
 use App\Models\User;
 use App\Mail\ItemAcceptRejectMail;
+use App\Http\Resources\ItemResource;
 use Illuminate\Support\Facades\Mail;
 
 class ItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $status = $request->query('status', 'all');
 
-        $items = Item::with('user') // eager load user
+        $items = Item::with('user')
             ->when($status !== 'all', function ($query) use ($status) {
                 return $query->where('status', $status);
             })
             ->orderBy('id', 'desc')
             ->paginate(20);
+
+        // Transform items using resource
+        $items->getCollection()->transform(function ($item) {
+            return (new ItemResource($item))->toArray(request());
+        });
 
         return view('admin.items.index', compact('items','status'));
     }
@@ -55,6 +58,10 @@ class ItemController extends Controller
         })
         ->orderBy('id', 'desc')
         ->paginate(20);
+
+        $items->getCollection()->transform(function ($item) {
+            return new ItemResource($item);
+        });
 
         $status = 'Search Result';
 
