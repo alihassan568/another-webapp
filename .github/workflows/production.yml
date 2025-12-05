@@ -20,7 +20,7 @@ jobs:
           extensions: mbstring, bcmath, pdo, tokenizer, openssl
 
       - name: Install Composer Dependencies
-        run: composer install --no-dev --prefer-dist --optimize-autoloader
+        run: composer install --prefer-dist --optimize-autoloader
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -133,10 +133,11 @@ jobs:
             php artisan migrate --force || echo "Migration failed - continuing without DB operations"
             
             echo "Attempting to seed database..."
-            composer require fakerphp/faker --no-dev --optimize-autoloader 2>/dev/null || echo "Faker installation failed"
             php artisan db:seed --force 2>/dev/null || echo "Database seeding failed - continuing without seeding"
             
             echo "Setting up basic cache and optimization..."
+            php artisan route:clear
+            php artisan route:cache 2>/dev/null || echo "Route caching failed - continuing without route cache"
             php artisan view:cache
             php artisan config:cache
             
