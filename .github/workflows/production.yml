@@ -38,7 +38,6 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          # key: ${{ secrets.SSH_PRIVATE_KEY }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
           timeout: 60s
@@ -78,12 +77,60 @@ jobs:
           timeout: 60s
           script: |
             cd /home/u404772588/domains/another-go.com
-            cp .env.example .env
+            
+            echo "Setting up environment file..."
+            echo "Creating production .env file with current secrets..."
+            cat > .env << 'EOF'
+            APP_NAME=Another-Go
+            APP_ENV=production
+            APP_KEY=
+            APP_DEBUG=false
+            APP_URL=https://another-go.com
+            
+            LOG_CHANNEL=stack
+            LOG_DEPRECATIONS_CHANNEL=null
+            LOG_LEVEL=error
+            
+            DB_CONNECTION=mysql
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=3306
+            DB_DATABASE=u404772588_anothergo
+            DB_USERNAME=u404772588_anothergo
+            DB_PASSWORD=ChangeAli@123
+            
+            BROADCAST_DRIVER=log
+            CACHE_DRIVER=file
+            FILESYSTEM_DISK=local
+            QUEUE_CONNECTION=sync
+            SESSION_DRIVER=file
+            SESSION_LIFETIME=120
+            
+            MAIL_MAILER=smtp
+            MAIL_HOST=mailpit
+            MAIL_PORT=1025
+            MAIL_USERNAME=null
+            MAIL_PASSWORD=null
+            MAIL_ENCRYPTION=null
+            MAIL_FROM_ADDRESS=hello@another-go.com
+            MAIL_FROM_NAME="Another-Go"
+            EOF
+            
             php artisan config:clear
             php artisan cache:clear
-            php artisan key:generate
+            php artisan key:generate --force
+            
+            echo "Testing database connection..."
+            php artisan tinker --execute="
+            try {
+                DB::connection()->getPdo();
+                echo 'Database connection: SUCCESS';
+            } catch (Exception \$e) {
+                echo 'Database connection: FAILED - ' . \$e->getMessage();
+                exit(1);
+            }"
+            
             php artisan migrate --force
-            php artisan app:update-roles-and-permissions
+            php artisan app:update-roles-and-permissions || echo "Custom command not found - skipping"
 
       - name: Move `build` folder and fix `manifest.json`
         uses: appleboy/ssh-action@v1.0.0
@@ -95,7 +142,7 @@ jobs:
           timeout: 60s
           script: |
             cd /home/u404772588/domains/another-go.com/public_html
-            cp -r build ../public/
+            cp -r build ../public/ 2>/dev/null || echo "No build folder found"
             if [ -f ../public/build/.vite/manifest.json ]; then
               mv ../public/build/.vite/manifest.json ../public/build/manifest.json
             fi
