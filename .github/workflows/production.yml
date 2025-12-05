@@ -33,12 +33,17 @@ jobs:
       - name: Build Frontend Assets
         run: npm run build
 
+      - name: Debug - Show Connection Details
+        run: |
+          echo "Host: 82.29.188.55"
+          echo "Username: u404772588"
+          echo "Port: 65002"
+
       - name: Test SSH Connection (Debug Step)
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          # key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: "82.29.188.55"
+          username: "u404772588"
           password: ${{ secrets.SSH_PASSWORD }}
           port: 65002
           timeout: 60s
