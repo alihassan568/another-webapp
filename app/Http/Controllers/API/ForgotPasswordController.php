@@ -95,16 +95,23 @@ class ForgotPasswordController extends Controller
 
         if (!empty($result)) {
             if (!$result->expired_at->isPast()) {
+                // Update user email verification status
                 User::where('id','=',$id)->update([
                     'email_verified_at' => now()
                 ]);
 
+                // Delete the verification code
                 $result->delete();
 
-                return view('auth.login');
+                // Return success view with message
+                return view('auth.email-verified');
+            } else {
+                // Token expired
+                return view('auth.email-verification-expired');
             }
         }
 
-        abort(404);
+        // Invalid token or user
+        abort(404, 'Invalid verification link');
     }
 }
