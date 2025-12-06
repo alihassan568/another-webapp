@@ -7,6 +7,7 @@ use App\Http\Controllers\API\ForgotPasswordController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\AdminCommissionController;
+use App\Http\Controllers\Admin\AdminRoleController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -64,6 +65,11 @@ Route::middleware('auth')->group(function () {
     Route::controller(CommissionController::class)->group(function () {
         Route::get('admin/item/commission/{id}','create')->name('admin.item.commission');
         Route::post('admin/item/commission/{id}','store')->name('admin.item.commission');
+    });
+
+    // Admin Role Management Routes
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::resource('roles', AdminRoleController::class);
     });
 });
 
