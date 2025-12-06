@@ -136,7 +136,7 @@ jobs:
             MAIL_MAILER=smtp
             MAIL_HOST=smtp.hostinger.com
             MAIL_PORT=465
-            MAIL_USERNAME=anothergo@admin.com
+            MAIL_USERNAME=info@another-go.com
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             MAIL_ENCRYPTION=ssl
             MAIL_FROM_ADDRESS=info@another-go.com
