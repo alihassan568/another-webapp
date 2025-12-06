@@ -139,7 +139,7 @@ jobs:
             MAIL_USERNAME=anothergo@admin.com
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             MAIL_ENCRYPTION=ssl
-            MAIL_FROM_ADDRESS=anothergo@admin.com
+            MAIL_FROM_ADDRESS=info@another-go.com
             MAIL_FROM_NAME="Another-Go"
             EOF
             
