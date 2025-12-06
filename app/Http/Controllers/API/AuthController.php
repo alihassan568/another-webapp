@@ -264,7 +264,12 @@ class AuthController extends Controller
 
         $link = env('APP_URL').'/email/verification'.'?id='.$userId.'&token='.$token;
 
-        Mail::to($email)->queue(new VerificationMail($link));
+        try {
+            Mail::to($email)->send(new VerificationMail($link));
+            \Log::info('Email sent successfully to: ' . $email);
+        } catch (\Exception $e) {
+            \Log::error('Email sending failed: ' . $e->getMessage());
+        }
 
         return true;
     }
