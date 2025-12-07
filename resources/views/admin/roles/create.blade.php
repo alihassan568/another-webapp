@@ -91,6 +91,27 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <!-- Role Type -->
+                        <div class="mt-6">
+                            <label for="type" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                Role Type <span class="text-red-500">*</span>
+                            </label>
+                            <select id="type" 
+                                    name="type" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    required>
+                                <option value="">Select role type</option>
+                                <option value="internal" {{ old('type') == 'internal' ? 'selected' : '' }}>Internal</option>
+                                <option value="external" {{ old('type') == 'external' ? 'selected' : '' }}>External</option>
+                            </select>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                Internal roles are for staff/admin users. External roles are for vendors/customers.
+                            </p>
+                            @error('type')
+                                <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Permissions Section -->
@@ -140,10 +161,10 @@
                                         <label class="flex items-center group cursor-pointer">
                                             <input type="checkbox" 
                                                    name="permissions[]" 
-                                                   value="{{ $permission['id'] }}"
+                                                   value="{{ $permission['name'] }}"
                                                    data-module="{{ $module }}"
                                                    class="w-4 h-4 text-blue-600 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500 rounded focus:ring-blue-500 focus:ring-2 transition-all"
-                                                   {{ in_array($permission['id'], old('permissions', [])) ? 'checked' : '' }}>
+                                                   {{ in_array($permission['name'], old('permissions', [])) ? 'checked' : '' }}>
                                             <span class="ml-3 text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                                                 {{ ucwords(str_replace(['_', '-'], ' ', $permission['name'])) }}
                                             </span>
