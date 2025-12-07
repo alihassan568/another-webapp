@@ -140,7 +140,7 @@ jobs:
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             MAIL_ENCRYPTION=ssl
             MAIL_FROM_ADDRESS=info@another-go.com
-            MAIL_FROM_NAME="Another-Go"
+            MAIL_FROM_NAME=Another-Go
             EOF
             
             php artisan config:clear
