@@ -18,7 +18,30 @@ use App\Http\Controllers\AdminCommissionController;
 |
 */
 
-Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
+Route::get('/', function() {
+    try {
+        // Test database connection first
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        return app(\App\Http\Controllers\HomeController::class)->index();
+    } catch (\Exception $e) {
+        // If database fails, return simple welcome page
+        \Illuminate\Support\Facades\Log::error('Database connection failed: ' . $e->getMessage());
+        return view('welcome-simple', [
+            'totalApprovedItems' => 0,
+            'totalCategories' => 0,
+            'totalVendors' => 0
+        ]);
+    }
+});
+
+// Fallback route for debugging
+Route::get('/test-welcome', function() {
+    return view('welcome-simple', [
+        'totalApprovedItems' => 0,
+        'totalCategories' => 0,
+        'totalVendors' => 0
+    ]);
+});
 
 Route::get('/admin/commission-settings', [AdminCommissionController::class, 'index'])->name('admin.commission.settings');
 Route::post('/admin/commission-settings', [AdminCommissionController::class, 'update'])->name('admin.commission.settings.update');
@@ -33,7 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::controller(ItemController::class)->group(function () {
         Route::get('/admin/items', 'index')->name('admin.items');
         Route::get('admin/item/accept/{id}','accept')->name('admin.item.accept');
-        Route::get('admin/item/reject/{id}','reject_item')->name('admin.item.reject');
+        Route::get('admin/item/reject/{id}','reject_item')->name('admin.item.reject.form');
         Route::post('admin/item/reject/{id}','reject')->name('admin.item.reject');
         Route::post('admin/item/filter','search')->name('admin.items.filter');
     });

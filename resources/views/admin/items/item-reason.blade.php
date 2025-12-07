@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray dark:text-gray leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Item Rejection Reason') }}
         </h2>
     </x-slot>
 
     <form method="post" action="{{ route('admin.item.reject',$id) }}" enctype="multipart/form-data" class="mt-6 space-y-6">
     @csrf
-        <div class="py-12">
+        <div class="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                     <div class="max-w-7xl">
@@ -22,7 +22,7 @@
                                     <div class="sm:col-span-3">
                                         <div class="mt-2">
                                             <x-input-label for="password" :value="__('Reason')" />
-                                            <textarea name="rejection_reason" id="" class="mt-1 block w-full h-32 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                            <textarea name="rejection_reason" id="" class="mt-1 block w-full h-32 p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent" placeholder="Please provide the reason for rejecting this item..."></textarea>
                                             <x-input-error class="mt-2" :messages="$errors->get('reason')" />
                                         </div>
                                     </div>
