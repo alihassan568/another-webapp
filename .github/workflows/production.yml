@@ -132,6 +132,8 @@ jobs:
             QUEUE_CONNECTION=sync
             SESSION_DRIVER=file
             SESSION_LIFETIME=120
+
+            MEMCACHED_HOST=https://another-go.com
             
             MAIL_MAILER=smtp
             MAIL_HOST=smtp.hostinger.com
