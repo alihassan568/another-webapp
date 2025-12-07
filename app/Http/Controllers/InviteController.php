@@ -62,9 +62,25 @@ class InviteController extends Controller
         }
 
         $invite = Invite::create($inviteData);
-        Mail::to($request->email)->send(new InviteUserMail($invite, $subject, $message));
+        
+        // Generate invite link
+        $inviteLink = route('invite.accept', $invite->token);
+        
+        // Send invitation email
+        try {
+            Mail::to($request->email)->send(new InviteUserMail(
+                $inviteLink,
+                $request->email,
+                $role->name,
+                $subject,
+                $message
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send invitation email: ' . $e->getMessage());
+            return redirect()->route('invite.index')->with('error', 'Invitation created but email failed to send.');
+        }
 
-        return redirect()->route('invite.index');
+        return redirect()->route('invite.index')->with('success', 'Invitation sent successfully!');
     }
 
     public function accept($token)
@@ -89,15 +105,20 @@ class InviteController extends Controller
         // Generate random password
         $password = Str::random(12);
         
+        // Determine role type for legacy column (default to 'user' if not admin/vendor)
+        $roleName = strtolower($invite->role->name);
+        $legacyRole = in_array($roleName, ['admin', 'vendor']) ? $roleName : 'user';
+        
         // Create user
         $user = User::create([
             'name' => explode('@', $invite->email)[0], // Use email prefix as name
             'email' => $invite->email,
             'password' => bcrypt($password),
             'email_verified_at' => now(),
+            'role' => $legacyRole, // For legacy role column
         ]);
 
-        // Assign role
+        // Assign Spatie role
         $user->assignRole($invite->role);
 
         // Update invite status
