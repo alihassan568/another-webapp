@@ -118,7 +118,7 @@
                             <!-- Action Buttons -->
                             <div class="space-y-2">
                                 @if($vendor->blocked_at)
-                                    @if(auth()->user()->hasPermissionTo('Can unblock vendor'))
+                                    @if(auth()->user()->hasPermissionTo(\App\Modules\User\Enums\Permissions::CAN_UNBLOCK_VENDOR))
                                     <form action="{{ route('admin.vendors.unblock', $vendor->id) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
@@ -133,7 +133,7 @@
                                     </form>
                                     @endif
                                 @else
-                                    @if(auth()->user()->hasPermissionTo('Can block vendor'))
+                                    @if(auth()->user()->hasPermissionTo(\App\Modules\User\Enums\Permissions::CAN_BLOCK_VENDOR))
                                     <form action="{{ route('admin.vendors.block', $vendor->id) }}" method="POST">
                                         @csrf
                                         @method('PATCH')

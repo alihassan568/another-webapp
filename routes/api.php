@@ -76,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{id}', [SubCategoryController::class, 'destroy']);
     });
 
-    Route::prefix('items')->group(function () {
+    Route::prefix('items')->middleware('vendor.blocked')->group(function () {
         Route::get('/', [ItemController::class, 'index']);
         Route::post('/', [ItemController::class, 'store']);
         Route::get('{id}', [ItemController::class, 'show']);
@@ -84,14 +84,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('delete/{id}', [ItemController::class, 'destroy']);
     });
 
-    Route::prefix('item/discount')->group(function () {
+    Route::prefix('item/discount')->middleware('vendor.blocked')->group(function () {
         Route::get('/remove/{id}', [ItemDiscountController::class, 'remove_discount']);
         Route::post('/add', [ItemDiscountController::class, 'add_discount']);
     });
 
     Route::prefix('order')->group(function () {
         Route::post('/place', [OrderController::class, 'place_order']);
-        Route::get('/venders', [OrderController::class, 'get_vender_orders']);
+        Route::get('/venders', [OrderController::class, 'get_vender_orders'])->middleware('vendor.blocked');
         Route::get('/users', [OrderController::class, 'get_user_orders']);
         Route::post('/update/status', [OrderController::class, 'update_order_status']);
     });
@@ -129,7 +129,7 @@ Route::prefix('get/businesses')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('vendor/stripe')->middleware(['auth:sanctum', 'vendor'])->group(function () {
+    Route::prefix('vendor/stripe')->middleware(['auth:sanctum', 'vendor', 'vendor.blocked'])->group(function () {
         Route::post('/onboard', [StripeController::class, 'onboardVendor']);
         Route::get('/status', [StripeController::class, 'getAccountStatus']);
         Route::get('/dashboard', [StripeController::class, 'getDashboardLink']);

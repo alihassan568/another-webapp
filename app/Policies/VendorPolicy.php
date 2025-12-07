@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Modules\User\Enums\Permissions;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class VendorPolicy
@@ -11,12 +12,12 @@ class VendorPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('Can list vendors');
+        return $user->hasPermissionTo(Permissions::CAN_LIST_VENDORS);
     }
 
     public function view(User $user, User $vendor): bool
     {
-        return $user->hasPermissionTo('Can view vendor');
+        return $user->hasPermissionTo(Permissions::CAN_VIEW_VENDOR);
     }
 
     public function block(User $user, User $vendor): bool
@@ -25,11 +26,11 @@ class VendorPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('Can block vendor');
+        return $user->hasPermissionTo(Permissions::CAN_BLOCK_VENDOR);
     }
 
     public function unblock(User $user, User $vendor): bool
     {
-        return $user->hasPermissionTo('Can unblock vendor');
+        return $user->hasPermissionTo(Permissions::CAN_UNBLOCK_VENDOR);
     }
 }

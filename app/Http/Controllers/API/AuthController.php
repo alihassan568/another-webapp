@@ -199,6 +199,14 @@ class AuthController extends Controller
             return $this->error('Invalid credentials 123', 401);
         }
 
+        // Check if vendor account is blocked
+        if ($user->blocked_at !== null) {
+            return $this->error(
+                'Your account has been blocked by the system administrator. Please contact support at info@anothergo.com for assistance.',
+                403
+            );
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         $business = BusinessProfile::where('user_id', '=', $user->id)->first();

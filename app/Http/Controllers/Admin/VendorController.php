@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\User\Enums\Permissions;
 use Illuminate\Http\Request;
 
 class VendorController extends Controller
@@ -13,7 +14,7 @@ class VendorController extends Controller
      */
     public function index(Request $request)
     {
-        abort_unless(auth()->user()->hasPermissionTo('Can list vendors'), 403);
+        abort_unless(auth()->user()->hasPermissionTo(Permissions::CAN_LIST_VENDORS), 403);
 
         $query = User::where('role', 'business')
             ->latest();
@@ -56,7 +57,7 @@ class VendorController extends Controller
             abort(404, 'Vendor not found');
         }
 
-        abort_unless(auth()->user()->hasPermissionTo('Can view vendor'), 403);
+        abort_unless(auth()->user()->hasPermissionTo(Permissions::CAN_VIEW_VENDOR), 403);
 
         // Load vendor's items
         $vendor->load(['items' => function ($query) {
@@ -87,7 +88,7 @@ class VendorController extends Controller
             abort(404, 'Vendor not found');
         }
 
-        abort_unless(auth()->user()->hasPermissionTo('Can block vendor'), 403);
+        abort_unless(auth()->user()->hasPermissionTo(Permissions::CAN_BLOCK_VENDOR), 403);
 
         // Prevent blocking yourself
         if (auth()->id() === $vendor->id) {
@@ -115,7 +116,7 @@ class VendorController extends Controller
             abort(404, 'Vendor not found');
         }
 
-        abort_unless(auth()->user()->hasPermissionTo('Can unblock vendor'), 403);
+        abort_unless(auth()->user()->hasPermissionTo(Permissions::CAN_UNBLOCK_VENDOR), 403);
 
         if (!$vendor->blocked_at) {
             return redirect()->back()->with('error', 'Vendor is not blocked.');
