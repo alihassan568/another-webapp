@@ -19,23 +19,23 @@ class InviteController extends Controller
     public function index()
     {
         Gate::authorize('viewAny', Invite::class);
-        $invites = Invite::with('role')->latest()->paginate(20);
-        return Inertia::render('Admin/Invite/Index', [
-            'invites' => InviteResource::collection($invites),
+        $invites = Invite::with('role')->latest()->paginate(15);
+        // Exclude Super Admin role from invitable roles
+        $roles = Role::where('name', '!=', 'Super Admin')->select('id', 'name')->get();
+        
+        return view('admin.invites.index', [
+            'invites' => $invites,
+            'roles' => $roles,
         ]);
     }
 
     public function create()
     {
         Gate::authorize('create', Invite::class);
-        $roles = Role::select('id', 'name')->get();
-        return Inertia::render('Admin/Invite/Create', [
-            'roles' => $roles->map(function($role) {
-                return [
-                    'id' => $role->id,
-                    'name' => $role->name,
-                ];
-            }),
+        // Exclude Super Admin role from invitable roles
+        $roles = Role::where('name', '!=', 'Super Admin')->select('id', 'name')->get();
+        return view('admin.invites.create', [
+            'roles' => $roles,
         ]);
     }
 
@@ -70,9 +70,53 @@ class InviteController extends Controller
     public function accept($token)
     {
         $invite = Invite::where('token', $token)->where('status', 'pending')->firstOrFail();
-        return Inertia::render('Auth/Register', [
-            'invite' => InviteResource::make($invite),
+        return view('admin.invites.accept', [
+            'invite' => $invite,
         ]);
+    }
+
+    public function confirmAccept(Request $request, $token)
+    {
+        $invite = Invite::where('token', $token)->where('status', 'pending')->firstOrFail();
+        
+        // Check if email already exists
+        $existingUser = User::where('email', $invite->email)->first();
+        if ($existingUser) {
+            return redirect()->route('invite.accept', $token)
+                ->with('error', 'User with this email already exists.');
+        }
+
+        // Generate random password
+        $password = Str::random(12);
+        
+        // Create user
+        $user = User::create([
+            'name' => explode('@', $invite->email)[0], // Use email prefix as name
+            'email' => $invite->email,
+            'password' => bcrypt($password),
+            'email_verified_at' => now(),
+        ]);
+
+        // Assign role
+        $user->assignRole($invite->role);
+
+        // Update invite status
+        $invite->update(['status' => 'accepted']);
+
+        // Return to success page with credentials
+        return view('admin.invites.success', [
+            'email' => $invite->email,
+            'password' => $password,
+            'role' => $invite->role->name,
+        ]);
+    }
+
+    public function cancel($token)
+    {
+        $invite = Invite::where('token', $token)->where('status', 'pending')->firstOrFail();
+        $invite->update(['status' => 'declined']);
+        
+        return redirect()->route('login')->with('status', 'Invitation declined successfully.');
     }
 
     public function updateRole(Request $request, Invite $invite)

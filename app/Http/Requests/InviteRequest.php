@@ -15,7 +15,16 @@ class InviteRequest extends FormRequest
     {
         return [
             'email' => 'required|email|unique:invites,email',
-            'role_id' => 'required|exists:roles,id',
+            'role_id' => [
+                'required',
+                'exists:roles,id',
+                function ($attribute, $value, $fail) {
+                    $role = \App\Models\Role::find($value);
+                    if ($role && $role->name === 'Super Admin') {
+                        $fail('Super Admin role cannot be assigned through invitations.');
+                    }
+                },
+            ],
         ];
     }
 }

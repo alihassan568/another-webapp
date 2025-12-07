@@ -71,7 +71,19 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('roles', AdminRoleController::class);
     });
+
+    // Invite Routes
+    Route::prefix('admin/invites')->name('invite.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\InviteController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\InviteController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\InviteController::class, 'store'])->name('store');
+    });
 });
+
+// Public invite routes (no auth required)
+Route::get('/invite/accept/{token}', [\App\Http\Controllers\InviteController::class, 'accept'])->name('invite.accept');
+Route::post('/invite/accept/{token}', [\App\Http\Controllers\InviteController::class, 'confirmAccept'])->name('invite.confirm');
+Route::post('/invite/cancel/{token}', [\App\Http\Controllers\InviteController::class, 'cancel'])->name('invite.cancel');
 
 Route::get('admin/login',function() {
     return view('auth.admin-login');
