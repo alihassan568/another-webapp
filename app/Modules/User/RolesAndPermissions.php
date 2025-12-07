@@ -27,6 +27,10 @@ class RolesAndPermissions
                     PermissionProperties::canApproveItem(),
                     PermissionProperties::canRejectItem(),
                     PermissionProperties::canSetItemCommission(),
+                    PermissionProperties::canListVendors(),
+                    PermissionProperties::canViewVendor(),
+                    PermissionProperties::canBlockVendor(),
+                    PermissionProperties::canUnblockVendor(),
                 ],
             ),
         ];

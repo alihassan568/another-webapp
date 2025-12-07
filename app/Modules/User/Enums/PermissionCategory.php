@@ -32,5 +32,6 @@ enum PermissionCategory: string
     case CAN_MANAGE_SUBSCRIPTION = 'can manage subscription';
     case CAN_MANAGE_COMMISSION = 'can manage commission';
     case CAN_MANAGE_ITEMS = 'can manage items';
+    case CAN_MANAGE_VENDORS = 'can manage vendors';
 
 }

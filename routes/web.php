@@ -78,6 +78,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/create', [\App\Http\Controllers\InviteController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\InviteController::class, 'store'])->name('store');
     });
+
+    // Vendor Management Routes
+    Route::prefix('admin/vendors')->name('admin.vendors.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\VendorController::class, 'index'])->name('index');
+        Route::get('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'show'])->name('show');
+        Route::patch('/{vendor}/block', [\App\Http\Controllers\Admin\VendorController::class, 'block'])->name('block');
+        Route::patch('/{vendor}/unblock', [\App\Http\Controllers\Admin\VendorController::class, 'unblock'])->name('unblock');
+    });
 });
 
 // Public invite routes (no auth required)

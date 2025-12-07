@@ -117,4 +117,40 @@ class PermissionProperties
             Permissions::CAN_SET_ITEM_COMMISSION,
         );
     }
+
+    public static function canListVendors(): PermissionInterface
+    {
+        return new PermissionFactory(
+            PermissionType::EXTERNAL,
+            PermissionCategory::CAN_MANAGE_VENDORS,
+            Permissions::CAN_LIST_VENDORS,
+        );
+    }
+
+    public static function canViewVendor(): PermissionInterface
+    {
+        return new PermissionFactory(
+            PermissionType::EXTERNAL,
+            PermissionCategory::CAN_MANAGE_VENDORS,
+            Permissions::CAN_VIEW_VENDOR,
+        );
+    }
+
+    public static function canBlockVendor(): PermissionInterface
+    {
+        return new PermissionFactory(
+            PermissionType::INTERNAL,
+            PermissionCategory::CAN_MANAGE_VENDORS,
+            Permissions::CAN_BLOCK_VENDOR,
+        );
+    }
+
+    public static function canUnblockVendor(): PermissionInterface
+    {
+        return new PermissionFactory(
+            PermissionType::INTERNAL,
+            PermissionCategory::CAN_MANAGE_VENDORS,
+            Permissions::CAN_UNBLOCK_VENDOR,
+        );
+    }
 }
