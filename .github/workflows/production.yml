@@ -132,15 +132,17 @@ jobs:
             QUEUE_CONNECTION=sync
             SESSION_DRIVER=file
             SESSION_LIFETIME=120
+
+            MEMCACHED_HOST=https://another-go.com
             
             MAIL_MAILER=smtp
             MAIL_HOST=smtp.hostinger.com
             MAIL_PORT=465
-            MAIL_USERNAME=anothergo@admin.com
-            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            MAIL_USERNAME=info@another-go.com
+            MAIL_PASSWORD=ChangeAnotherGo@123
             MAIL_ENCRYPTION=ssl
-            MAIL_FROM_ADDRESS=anothergo@admin.com
-            MAIL_FROM_NAME="Another-Go"
+            MAIL_FROM_ADDRESS=info@another-go.com
+            MAIL_FROM_NAME=Another-Go
             EOF
             
             php artisan config:clear
