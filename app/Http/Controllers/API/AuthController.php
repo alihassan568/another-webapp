@@ -169,9 +169,6 @@ class AuthController extends Controller
                 'owner_name' => $request->owner_name,
                 'opening_time' => $request->opening_time,
                 'close_time' => $request->close_time,
-                'bank_title' => $request->bank_title,
-                'bank_name' => $request->bank_name,
-                'iban' => $request->iban,
                 'user_id' => $user->id
             ]);
 
@@ -179,9 +176,6 @@ class AuthController extends Controller
             $user->owner_name = $business->owner_name ?? null;
             $user->opening_time = $business->opening_time ?? null;
             $user->close_time = $business->close_time ?? null;
-            $user->bank_title = $business->bank_title ?? null;
-            $user->bank_name = $business->bank_name ?? null;
-            $user->iban = $business->iban ?? null;
         }
 
             // $token = $user->createToken('auth_token')->plainTextToken;
@@ -231,6 +225,14 @@ class AuthController extends Controller
 
         if ($user->role != 'business') {
             return $this->error('Invalid credentials 123', 401);
+        }
+
+        // Check if vendor account is blocked
+        if ($user->blocked_at !== null) {
+            return $this->error(
+                'Your account has been blocked by the system administrator. Please contact support at info@anothergo.com for assistance.',
+                403
+            );
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
