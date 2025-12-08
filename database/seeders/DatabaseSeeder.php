@@ -16,24 +16,24 @@ class DatabaseSeeder extends Seeder
         Artisan::call('app:update-roles-and-permissions');
 
         $user = User::create([
-            'name' => 'Haider Lasani',
-            'email' => 'haider@eliyce.com',
+            'name' => 'Ali Hassan',
+            'email' => 'ali@anothergo.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'email_verified_at' => now(),
         ]);
 
         $user1 = User::create([
-            'name' => 'Ali Hassan',
-            'email' => 'ali@eliyce.com',
+            'name' => 'Romeo',
+            'email' => 'romeo@anothergo.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'email_verified_at' => now(),
         ]);
 
         $user2 = User::create([
-            'name' => 'Muhammad Saqlain',
-            'email' => 'saqlain@eliyce.com',
+            'name' => 'Joe',
+            'email' => 'joe@anothergo.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'email_verified_at' => now(),

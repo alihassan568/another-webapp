@@ -128,12 +128,16 @@ class AuthController extends Controller
             $path = 'storage/images/vender/' . $fullPath2;
         }
 
+        // Extract country code from phone number
+        $country = \App\Helpers\CountryHelper::extractCountryFromPhone($request->phone);
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
             'role' => 'business',
             'phone' => $request->phone,
+            'country' => $country,
             'address' => $request->address,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
@@ -146,9 +150,6 @@ class AuthController extends Controller
                 'owner_name' => $request->owner_name,
                 'opening_time' => $request->opening_time,
                 'close_time' => $request->close_time,
-                'bank_title' => $request->bank_title,
-                'bank_name' => $request->bank_name,
-                'iban' => $request->iban,
                 'user_id' => $user->id
             ]);
 
@@ -156,9 +157,6 @@ class AuthController extends Controller
             $user->owner_name = $business->owner_name ?? null;
             $user->opening_time = $business->opening_time ?? null;
             $user->close_time = $business->close_time ?? null;
-            $user->bank_title = $business->bank_title ?? null;
-            $user->bank_name = $business->bank_name ?? null;
-            $user->iban = $business->iban ?? null;
         }
 
         // $token = $user->createToken('auth_token')->plainTextToken;
