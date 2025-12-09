@@ -79,7 +79,7 @@ class InviteController extends Controller
                 $request->email,
                 $role->name,
                 $subject,
-                $message
+                $message // now passed as inviteMessage
             ));
         } catch (\Exception $e) {
             \Log::error('Failed to send invitation email: ' . $e->getMessage());

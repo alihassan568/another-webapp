@@ -104,7 +104,7 @@
         <div class="content">
             <p>Hello,</p>
             
-            <p>{{ $message }}</p>
+            <p>{{ $inviteMessage }}</p>
 
             <div class="invitation-box">
                 <p><strong>Email:</strong> {{ $email }}</p>

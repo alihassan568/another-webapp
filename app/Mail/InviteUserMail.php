@@ -16,18 +16,18 @@ class InviteUserMail extends Mailable
     public $email;
     public $role;
     public $subject;
-    public $message;
+    public $inviteMessage;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($inviteLink, $email, $role, $subject, $message)
+    public function __construct($inviteLink, $email, $role, $subject, $inviteMessage)
     {
         $this->inviteLink = $inviteLink;
         $this->email = $email;
         $this->role = $role;
         $this->subject = $subject;
-        $this->message = $message;
+        $this->inviteMessage = $inviteMessage;
     }
 
     /**
@@ -47,6 +47,13 @@ class InviteUserMail extends Mailable
     {
         return new Content(
             view: 'emails.invite-user',
+            with: [
+                'inviteLink' => $this->inviteLink,
+                'email' => $this->email,
+                'role' => $this->role,
+                'subject' => $this->subject,
+                'inviteMessage' => $this->inviteMessage,
+            ],
         );
     }
 
