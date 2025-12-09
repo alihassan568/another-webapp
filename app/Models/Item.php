@@ -31,6 +31,11 @@ class Item extends Model
         'status'
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     protected $appends = ['discounted_price'];
 
 

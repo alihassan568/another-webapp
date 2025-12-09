@@ -234,13 +234,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created At</label>
-                                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $itemData['created_at']['time'] }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $itemData['created_at']['human'] }}</p>
+                                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $itemData['created_at']['human'] }}</p>
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Updated</label>
-                                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $itemData['updated_at']['time'] }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $itemData['updated_at']['human'] }}</p>
+                                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $itemData['updated_at']['human'] }}</p>
                                     </div>
                                 </div>
                             </div>

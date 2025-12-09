@@ -28,6 +28,7 @@ class ItemResource extends JsonResource
                 'id' => $this->user?->id,
                 'name' => $this->user?->name,
                 'email' => $this->user?->email,
+                'business_name' => $this->user?->business_name,
             ],
             'created_at' => [
                 'formatted' => DateHelper::toDate($this->created_at),
