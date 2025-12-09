@@ -22,6 +22,7 @@ class CommissionController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * Sets the requested commission and marks status as pending for vendor approval
      */
     public function store(Request $request, $id)
     {
@@ -29,13 +30,21 @@ class CommissionController extends Controller
             'commission' => 'required|numeric|min:0|max:100',
         ]);
 
-        $item = Item::find($id);
+        $item = Item::findOrFail($id);
 
-        if (!empty($item)) {
-            $item->commission = $request->commission;
-            $item->save();
-        }
+        // Set requested commission and mark as pending vendor approval
+        $item->requested_commission = $request->commission;
+        $item->commission_status = 'pending';
+        $item->save();
 
-        return redirect()->route('admin.items')->with('success', 'Commission set successfully!');
+        \Log::info('Admin set commission request', [
+            'admin_id' => auth()->id(),
+            'item_id' => $item->id,
+            'item_name' => $item->name,
+            'requested_commission' => $request->commission,
+            'vendor_id' => $item->user_id,
+        ]);
+
+        return redirect()->route('admin.items')->with('success', 'Commission request sent to vendor for approval!');
     }
 }

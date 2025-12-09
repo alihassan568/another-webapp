@@ -20,14 +20,17 @@ class ItemResource extends JsonResource
             'discounted_price' => $this->discounted_price,
             'discount_percentage' => $this->discount_percentage,
             'commission' => $this->commission,
+            'requested_commission' => $this->requested_commission,
             'commission_status' => $this->commission_status,
             'status' => $this->status,
-            'image' => $this->image,
+            'image' => $this->images[0] ?? null, // First image for backward compatibility
+            'images' => $this->images, // Array of all images
             'rejection_reason' => $this->rejection_reason,
             'user' => [
                 'id' => $this->user?->id,
                 'name' => $this->user?->name,
                 'email' => $this->user?->email,
+                'business_name' => $this->user?->business_name,
             ],
             'created_at' => [
                 'formatted' => DateHelper::toDate($this->created_at),

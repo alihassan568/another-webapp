@@ -31,7 +31,13 @@ class Item extends Model
         'status'
     ];
 
-    protected $appends = ['discounted_price'];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'image' => 'array', // Cast JSON image column to array
+    ];
+
+    protected $appends = ['discounted_price', 'images'];
 
 
     public function getDiscountedPriceAttribute()
@@ -53,6 +59,35 @@ class Item extends Model
         }
 
         return $this->price;
+    }
+
+    /**
+     * Get images as array accessor
+     * Handles both old single image string and new JSON array format
+     */
+    public function getImagesAttribute()
+    {
+        if (is_null($this->image)) {
+            return [];
+        }
+
+        // If already an array (from cast), return it
+        if (is_array($this->image)) {
+            return $this->image;
+        }
+
+        // Handle old format (single image string)
+        if (is_string($this->image)) {
+            // Check if it's JSON
+            $decoded = json_decode($this->image, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded;
+            }
+            // Old single image format
+            return [$this->image];
+        }
+
+        return [];
     }
 
     public function user()

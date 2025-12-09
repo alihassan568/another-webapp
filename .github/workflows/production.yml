@@ -171,6 +171,12 @@ jobs:
             php artisan view:cache
             php artisan config:cache
             
+            echo "Setting up storage symlink and directories..."
+            php artisan storage:link || echo "Storage link already exists"
+            mkdir -p storage/app/public/images/items
+            chmod -R 775 storage
+            chmod -R 775 public/storage
+            
             echo "Deployment completed - check logs if database connection failed"
 
       - name: Create deployment status file
