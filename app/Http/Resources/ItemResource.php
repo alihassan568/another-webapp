@@ -22,7 +22,8 @@ class ItemResource extends JsonResource
             'commission' => $this->commission,
             'commission_status' => $this->commission_status,
             'status' => $this->status,
-            'image' => $this->image,
+            'image' => $this->images[0] ?? null, // First image for backward compatibility
+            'images' => $this->images, // Array of all images
             'rejection_reason' => $this->rejection_reason,
             'user' => [
                 'id' => $this->user?->id,

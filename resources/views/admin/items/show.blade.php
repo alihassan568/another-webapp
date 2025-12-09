@@ -44,19 +44,56 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left Column: Item Image -->
+                        <!-- Left Column: Item Images Gallery -->
                         <div class="lg:col-span-1">
                             <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Item Image</h3>
-                                @if(!empty($itemData['image']))
-                                <img src="{{ asset($itemData['image']) }}" alt="{{ $itemData['name'] }}" class="w-full h-auto rounded-lg shadow-lg object-cover">
+                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                                    Item Images 
+                                    @if(!empty($itemData['images']) && is_array($itemData['images']))
+                                    <span class="text-sm font-normal text-gray-500">({{ count($itemData['images']) }})</span>
+                                    @endif
+                                </h3>
+                                @if(!empty($itemData['images']) && is_array($itemData['images']))
+                                    <!-- Main Image -->
+                                    <div class="mb-4">
+                                        <img id="mainImage" src="{{ asset($itemData['images'][0]) }}" alt="{{ $itemData['name'] }}" class="w-full h-auto rounded-lg shadow-lg object-cover">
+                                        <p class="text-xs text-center mt-2 text-gray-500 dark:text-gray-400">Main Image</p>
+                                    </div>
+                                    
+                                    <!-- Thumbnail Grid (if more than 1 image) -->
+                                    @if(count($itemData['images']) > 1)
+                                    <div class="grid grid-cols-3 gap-2">
+                                        @foreach($itemData['images'] as $index => $imageUrl)
+                                        <div class="relative cursor-pointer thumbnail-container" onclick="changeMainImage('{{ asset($imageUrl) }}', {{ $index }})">
+                                            <img src="{{ asset($imageUrl) }}" alt="{{ $itemData['name'] }} - Image {{ $index + 1 }}" class="w-full h-20 object-cover rounded-md shadow hover:shadow-lg transition-shadow duration-200 thumbnail-image {{ $index === 0 ? 'ring-2 ring-blue-500' : '' }}" data-index="{{ $index }}">
+                                            @if($index === 0)
+                                            <span class="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded font-semibold">MAIN</span>
+                                            @endif
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    
+                                    <script>
+                                        function changeMainImage(imageUrl, index) {
+                                            document.getElementById('mainImage').src = imageUrl;
+                                            
+                                            // Remove ring from all thumbnails
+                                            document.querySelectorAll('.thumbnail-image').forEach(img => {
+                                                img.classList.remove('ring-2', 'ring-blue-500');
+                                            });
+                                            
+                                            // Add ring to clicked thumbnail
+                                            document.querySelector(`[data-index="${index}"]`).classList.add('ring-2', 'ring-blue-500');
+                                        }
+                                    </script>
+                                    @endif
                                 @else
                                 <div class="w-full h-64 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
                                     <div class="text-center">
                                         <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        <p class="mt-2 text-gray-500 dark:text-gray-400">No image available</p>
+                                        <p class="mt-2 text-gray-500 dark:text-gray-400">No images available</p>
                                     </div>
                                 </div>
                                 @endif

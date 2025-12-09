@@ -58,34 +58,78 @@ class ItemController extends Controller
     {
         \Log::info('📥 ItemController: store() called', [
             'vendor_id' => Auth::id(),
-            'has_image' => $request->hasFile('image'),
-            'request_data' => $request->except(['image'])
+            'has_images' => $request->hasFile('images'),
+            'images_count' => $request->hasFile('images') ? count($request->file('images')) : 0,
+            'request_data' => $request->except(['images'])
         ]);
 
-        $path = null;
+        $imagePaths = [];
+        $maxImages = 10; // Maximum allowed images per item
 
+        // Validate required fields first
         $validated = $request->validate([
             'name' => 'required',
             'category' => 'required',
             'sub_category' => 'required',
-            'price' => 'required'
+            'price' => 'required',
         ]);
 
-        if($request->hasFile('image')) {
-            // upload photo
-            $p_image = $request->image;
-            $name = time();
-            $file = $p_image->getClientOriginalName();
-            $extension = $p_image->extension();
-            $ImageName = $name.$file;
-            $fileName = md5($ImageName);
-            $fullPath2 = $fileName.'.'.$extension;
-            $p_image->move(public_path('storage/images/items'), $fullPath2);
-            $path = 'storage/images/items/'.$fullPath2;
-            \Log::info('📸 ItemController: Image uploaded', ['path' => $path]);
+        if($request->hasFile('images')) {
+            $images = $request->file('images');
+            
+            if (!is_array($images)) {
+                $images = [$images];
+            }
+            
+            $imageCount = min(count($images), $maxImages);
+            \Log::info('📸 ItemController: Processing ' . $imageCount . ' images');
+            
+            for($i = 0; $i < $imageCount; $i++) {
+                try {
+                    $p_image = $images[$i];
+                    
+                    if (!$p_image->isValid()) {
+                        \Log::warning('⚠️ ItemController: Image ' . $i . ' is invalid, skipping');
+                        continue;
+                    }
+                    
+                    if ($p_image->getSize() > 5120 * 1024) {
+                        \Log::warning('⚠️ ItemController: Image ' . $i . ' exceeds 5MB, skipping');
+                        continue;
+                    }
+                    
+                    $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!in_array($p_image->getMimeType(), $allowedMimes)) {
+                        \Log::warning('⚠️ ItemController: Image ' . $i . ' has invalid mime type: ' . $p_image->getMimeType());
+                        continue;
+                    }
+                    
+                    $name = time() . '_' . $i . '_' . rand(1000, 9999);
+                    $extension = $p_image->extension();
+                    $fileName = md5($name . $p_image->getClientOriginalName());
+                    $fullPath2 = $fileName . '.' . $extension;
+                    
+                    $uploadPath = public_path('storage/images/items');
+                    if (!file_exists($uploadPath)) {
+                        mkdir($uploadPath, 0755, true);
+                    }
+                    
+                    $p_image->move($uploadPath, $fullPath2);
+                    $imagePaths[] = 'storage/images/items/' . $fullPath2;
+                    
+                    \Log::info('✅ ItemController: Image ' . $i . ' uploaded successfully');
+                } catch (\Exception $e) {
+                    \Log::error('❌ ItemController: Failed to upload image ' . $i . ': ' . $e->getMessage());
+                    continue;
+                }
+            }
+            
+            \Log::info('📸 ItemController: ' . count($imagePaths) . ' images uploaded successfully', ['paths' => $imagePaths]);
         }
 
-        \Log::info('💾 ItemController: Creating item in database...');
+        $path = !empty($imagePaths) ? json_encode($imagePaths) : null;
+
+        \Log::info('💾 ItemController: Creating item in database...', ['image_count' => count($imagePaths)]);
 
         $item = Item::create([
             'name' => $validated['name'],
@@ -94,7 +138,7 @@ class ItemController extends Controller
             'description' => $request->description,
             'quantity' => $request->quantity,
             'price' => $validated['price'],
-            'image' => $path,
+            'image' => $path, // JSON array of image paths
             'discount_percentage' => $request->discount_percentage,
             'valid_from' => $request->valid_from,
             'valid_until' => $request->valid_until,
@@ -145,21 +189,26 @@ class ItemController extends Controller
         \Log::info('📝 ItemController: update() called', [
             'item_id' => $id,
             'vendor_id' => Auth::id(),
-            'has_image' => $request->hasFile('image')
+            'has_images' => $request->hasFile('images'),
+            'images_count' => $request->hasFile('images') ? count($request->file('images')) : 0,
+            'existing_images' => $request->input('existing_images')
         ]);
 
         $item = Item::where('id','=',$id)->first();
 
         if(!empty($item)){
+            $maxImages = 10; // Maximum allowed images per item
 
+            // Validate required fields only
             $validated = $request->validate([
                 'name' => 'required',
                 'category' => 'required',
                 'sub_category' => 'required',
-                'price' => 'required'
+                'price' => 'required',
+                'existing_images' => 'nullable|string' // JSON string of existing images to keep
             ]);
 
-            // TODO: Update all item fields including pickup times
+            // Update all item fields
             $item->name = $validated['name'];
             $item->category = $validated['category'];
             $item->sub_category = $validated['sub_category'];
@@ -172,17 +221,87 @@ class ItemController extends Controller
             $item->pickup_end_time = $request->pickup_end_time ?? 0;
             $item->price = $validated['price'];
 
-            if($request->hasFile('image')) {
-                // upload photo
-                $p_image = $request->image;
-                $name = time();
-                $file = $p_image->getClientOriginalName();
-                $extension = $p_image->extension();
-                $ImageName = $name.$file;
-                $fileName = md5($ImageName);
-                $fullPath2 = $fileName.'.'.$extension;
-                $p_image->move(public_path('storage/images/items'), $fullPath2);
-                $item->image = 'storage/images/items/'.$fullPath2;
+            // Handle images update
+            $existingImages = [];
+            
+            // Get existing images that should be kept
+            if($request->has('existing_images') && !empty($request->existing_images)) {
+                $existingImages = json_decode($request->existing_images, true) ?? [];
+                \Log::info('📸 ItemController: Keeping existing images', ['count' => count($existingImages)]);
+            }
+
+            // Upload new images with error handling
+            if($request->hasFile('images')) {
+                $newImages = [];
+                $images = $request->file('images');
+                
+                // Ensure images is an array
+                if (!is_array($images)) {
+                    $images = [$images];
+                }
+                
+                $remainingSlots = $maxImages - count($existingImages);
+                $imageCount = min(count($images), $remainingSlots);
+                
+                \Log::info('📸 ItemController: Uploading new images', ['count' => $imageCount]);
+                
+                for($i = 0; $i < $imageCount; $i++) {
+                    try {
+                        $p_image = $images[$i];
+                        
+                        // Validate individual image
+                        if (!$p_image->isValid()) {
+                            \Log::warning('⚠️ ItemController: Image ' . $i . ' is invalid, skipping');
+                            continue;
+                        }
+                        
+                        // Check file size (5MB max)
+                        if ($p_image->getSize() > 5120 * 1024) {
+                            \Log::warning('⚠️ ItemController: Image ' . $i . ' exceeds 5MB, skipping');
+                            continue;
+                        }
+                        
+                        // Check mime type
+                        $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                        if (!in_array($p_image->getMimeType(), $allowedMimes)) {
+                            \Log::warning('⚠️ ItemController: Image ' . $i . ' has invalid mime type');
+                            continue;
+                        }
+                        
+                        $name = time() . '_' . $i . '_' . rand(1000, 9999);
+                        $extension = $p_image->extension();
+                        $fileName = md5($name . $p_image->getClientOriginalName());
+                        $fullPath2 = $fileName . '.' . $extension;
+                        
+                        // Ensure directory exists
+                        $uploadPath = public_path('storage/images/items');
+                        if (!file_exists($uploadPath)) {
+                            mkdir($uploadPath, 0755, true);
+                        }
+                        
+                        $p_image->move($uploadPath, $fullPath2);
+                        $newImages[] = 'storage/images/items/' . $fullPath2;
+                        
+                        \Log::info('✅ ItemController: Image ' . $i . ' uploaded successfully');
+                    } catch (\Exception $e) {
+                        \Log::error('❌ ItemController: Failed to upload image ' . $i . ': ' . $e->getMessage());
+                        continue;
+                    }
+                }
+                
+                // Merge existing and new images
+                $allImages = array_merge($existingImages, $newImages);
+                $item->image = json_encode($allImages);
+                
+                \Log::info('📸 ItemController: Images updated', [
+                    'existing' => count($existingImages),
+                    'new' => count($newImages),
+                    'total' => count($allImages)
+                ]);
+            } elseif(!empty($existingImages)) {
+                // Only existing images, no new uploads
+                $item->image = json_encode($existingImages);
+                \Log::info('📸 ItemController: Only existing images kept');
             }
 
             $item->save();
