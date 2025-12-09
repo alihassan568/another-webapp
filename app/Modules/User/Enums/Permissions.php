@@ -17,6 +17,7 @@ enum Permissions: string
     case CAN_EDIT_COMMISSION_SETTINGS = 'Can edit commission settings';
 
     case CAN_LIST_ITEMS = 'Can list items';
+    case CAN_VIEW_ITEMS = 'Can view items';
     case CAN_APPROVE_ITEM = 'Can approve item';
     case CAN_REJECT_ITEM = 'Can reject item';
     
@@ -26,4 +27,6 @@ enum Permissions: string
     case CAN_VIEW_VENDOR = 'Can view vendor';
     case CAN_BLOCK_VENDOR = 'Can block vendor';
     case CAN_UNBLOCK_VENDOR = 'Can unblock vendor';
+
+    case CAN_TRACK_INVITED_USER_ACTIVIY = 'can track invited user activity';
 }

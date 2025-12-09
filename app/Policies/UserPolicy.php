@@ -11,4 +11,9 @@ class UserPolicy
     {
         return $user->hasPermissionTo(Permissions::CAN_LIST_USERS);
     }
+
+    public function viewDashboard(User $user): bool
+    {
+        return $user->hasPermissionTo(Permissions::CAN_VIEW_DASHBOARD);
+    }
 }

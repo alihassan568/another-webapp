@@ -8,13 +8,16 @@ use App\Models\Item;
 use App\Models\User;
 use App\Mail\ItemAcceptRejectMail;
 use App\Http\Resources\ItemResource;
+use App\Traits\TracksAdminActivity;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Gate;
 
 class ItemController extends Controller
 {
+    use TracksAdminActivity;
     public function index(Request $request)
     {
-        // Get filter parameters from request
+        Gate::authorize('viewAny', Item::class);
         $status = $request->query('status', 'all');
         $search = $request->query('search', '');
         $dateFrom = $request->query('date_from', '');
@@ -64,7 +67,7 @@ class ItemController extends Controller
 
     public function search(Request $request)
     { 
-        // Redirect to index with query parameters instead
+        Gate::authorize('viewAny', Item::class);
         return redirect()->route('admin.items', [
             'status' => $request->status ?? 'all',
             'search' => $request->search ?? '',
@@ -73,29 +76,26 @@ class ItemController extends Controller
         ]);
     }
 
-    /**
-     * Show detailed view of an item
-     */
     public function show($id)
     {
+        Gate::authorize('view', Item::class);
         $item = Item::with('user')->findOrFail($id);
         
-        // Transform item using resource
         $itemData = (new ItemResource($item))->toArray(request());
         
         return view('admin.items.show', compact('itemData'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function accept($id)
     {
+        Gate::authorize('approve', Item::class);
         $item = Item::find($id);
 
         if (!empty($item)) {
             $item->status = 'approved';
             $item->save();
+            
+            $this->logItemApproval($item->id, $item->name, $item->user_id);
         }
 
         $user = User::where('id','=',$item->user_id)->first();
@@ -112,12 +112,15 @@ class ItemController extends Controller
 
     public function reject(Request $request,$id)
     {
+        Gate::authorize('reject', Item::class);
         $item = Item::find($id);
 
         if (!empty($item)) {
             $item->status = 'rejected';
-             $item->rejection_reason = $request->rejection_reason;
+            $item->rejection_reason = $request->rejection_reason;
             $item->save();
+            
+            $this->logItemRejection($item->id, $item->name, $item->user_id, $request->rejection_reason);
         }
 
         $user = User::where('id','=',$item->user_id)->first();

@@ -13,6 +13,8 @@ class CommissionSetting extends Model
         'stripe_fee_percentage',
         'stripe_fee_fixed',
         'tax_percentage',
+        'default_commission',
+        'tiered_commissions',
     ];
 
     protected $casts = [
@@ -21,7 +23,26 @@ class CommissionSetting extends Model
         'stripe_fee_percentage' => 'decimal:2',
         'stripe_fee_fixed' => 'decimal:2',
         'tax_percentage' => 'decimal:2',
+        'tiered_commissions' => 'array',
     ];
+    /**
+     * Calculate full payout breakdown for an order amount
+     * Returns array: [commission, stripe_fee, tax, vendor_payout]
+     */
+    public static function calculatePayout($amount)
+    {
+        $settings = self::getSettings();
+        $commission = ($amount * ((float)$settings->rate)) / 100;
+        $stripeFee = ($amount * ((float)$settings->stripe_fee_percentage)) / 100 + ((float)$settings->stripe_fee_fixed);
+        $tax = ($amount * ((float)$settings->tax_percentage)) / 100;
+        $vendorPayout = $amount - $commission - $stripeFee - $tax;
+        return [
+            'commission' => round($commission, 2),
+            'stripe_fee' => round($stripeFee, 2),
+            'tax' => round($tax, 2),
+            'vendor_payout' => round($vendorPayout, 2),
+        ];
+    }
 
     /**
      * Get the tax percentage (default 0.00)

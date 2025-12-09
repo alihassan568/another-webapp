@@ -93,6 +93,14 @@ class PermissionProperties
             Permissions::CAN_LIST_ITEMS,
         );
     }
+    public static function canViewItems(): PermissionInterface
+    {
+        return new PermissionFactory(
+            PermissionType::EXTERNAL,
+            PermissionCategory::CAN_MANAGE_ITEMS,
+            Permissions::CAN_VIEW_ITEMS,
+        );
+    }
     public static function canApproveItem(): PermissionInterface
     {
         return new PermissionFactory(
@@ -151,6 +159,15 @@ class PermissionProperties
             PermissionType::INTERNAL,
             PermissionCategory::CAN_MANAGE_VENDORS,
             Permissions::CAN_UNBLOCK_VENDOR,
+        );
+    }
+
+    public static function canTrackInvitedUserActivity(): PermissionInterface
+    {
+        return new PermissionFactory(
+            PermissionType::EXTERNAL,
+            PermissionCategory::CAN_MANAGE_USER,
+            Permissions::CAN_TRACK_INVITED_USER_ACTIVIY,
         );
     }
 }

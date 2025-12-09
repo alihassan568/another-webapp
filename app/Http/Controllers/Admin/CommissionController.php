@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Item;
 use App\Models\User;
+use App\Traits\TracksAdminActivity;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CommissionRequestMail;
+use Illuminate\Support\Facades\Gate;
 
 class CommissionController extends Controller
 {
+    use TracksAdminActivity;
     /**
      * Show the form for creating a new resource.
      */
@@ -26,6 +29,7 @@ class CommissionController extends Controller
      */
     public function store(Request $request, $id)
     {
+        Gate::authorize('setCommission', Item::class);
         $request->validate([
             'commission' => 'required|numeric|min:0|max:100',
         ]);
@@ -36,6 +40,9 @@ class CommissionController extends Controller
         $item->requested_commission = $request->commission;
         $item->commission_status = 'pending';
         $item->save();
+
+        // Log the commission setting activity
+        $this->logCommissionSet($item->id, $item->name, $request->commission, $item->user_id);
 
         \Log::info('Admin set commission request', [
             'admin_id' => auth()->id(),

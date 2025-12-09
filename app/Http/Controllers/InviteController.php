@@ -8,6 +8,7 @@ use App\Mail\InviteUserMail;
 use App\Models\Invite;
 use App\Models\Role;
 use App\Models\User;
+use App\Traits\TracksAdminActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
@@ -16,6 +17,7 @@ use Inertia\Inertia;
 
 class InviteController extends Controller
 {
+    use TracksAdminActivity;
     public function index()
     {
         Gate::authorize('viewAny', Invite::class);
@@ -48,6 +50,7 @@ class InviteController extends Controller
             'role_id' => $request->role_id,
             'token' => $token,
             'status' => 'pending',
+            'created_by_user_id' => auth()->id(), // Track who created this invite
         ];
 
         $role = Role::find($request->role_id);
@@ -62,6 +65,9 @@ class InviteController extends Controller
         }
 
         $invite = Invite::create($inviteData);
+        
+        // Log the invitation activity
+        $this->logUserInvite($invite->id, $request->email, $role->name);
         
         // Generate invite link
         $inviteLink = route('invite.accept', $invite->token);
@@ -109,6 +115,10 @@ class InviteController extends Controller
         $roleName = strtolower($invite->role->name);
         $legacyRole = in_array($roleName, ['admin', 'vendor']) ? $roleName : 'user';
         
+        // Get the inviter from the Invite model (we need to add this field)
+        // For now, we'll track who created the invite via a new column
+        $inviterId = $invite->created_by_user_id ?? null;
+        
         // Create user
         $user = User::create([
             'name' => explode('@', $invite->email)[0], // Use email prefix as name
@@ -116,6 +126,7 @@ class InviteController extends Controller
             'password' => bcrypt($password),
             'email_verified_at' => now(),
             'role' => $legacyRole, // For legacy role column
+            'invited_by_user_id' => $inviterId, // Track who invited this user
         ]);
 
         // Assign Spatie role
