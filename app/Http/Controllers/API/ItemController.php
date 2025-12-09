@@ -76,54 +76,36 @@ class ItemController extends Controller
 
         if($request->hasFile('images')) {
             $images = $request->file('images');
-            
             if (!is_array($images)) {
                 $images = [$images];
             }
-            
             $imageCount = min(count($images), $maxImages);
             \Log::info('📸 ItemController: Processing ' . $imageCount . ' images');
-            
             for($i = 0; $i < $imageCount; $i++) {
                 try {
                     $p_image = $images[$i];
-                    
                     if (!$p_image->isValid()) {
                         \Log::warning('⚠️ ItemController: Image ' . $i . ' is invalid, skipping');
                         continue;
                     }
-                    
                     if ($p_image->getSize() > 5120 * 1024) {
                         \Log::warning('⚠️ ItemController: Image ' . $i . ' exceeds 5MB, skipping');
                         continue;
                     }
-                    
                     $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
                     if (!in_array($p_image->getMimeType(), $allowedMimes)) {
                         \Log::warning('⚠️ ItemController: Image ' . $i . ' has invalid mime type: ' . $p_image->getMimeType());
                         continue;
                     }
-                    
-                    $name = time() . '_' . $i . '_' . rand(1000, 9999);
-                    $extension = $p_image->extension();
-                    $fileName = md5($name . $p_image->getClientOriginalName());
-                    $fullPath2 = $fileName . '.' . $extension;
-                    
-                    $uploadPath = public_path('storage/images/items');
-                    if (!file_exists($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-                    
-                    $p_image->move($uploadPath, $fullPath2);
-                    $imagePaths[] = 'storage/images/items/' . $fullPath2;
-                    
-                    \Log::info('✅ ItemController: Image ' . $i . ' uploaded successfully');
+                    // Use Laravel storage disk to save image
+                    $path = $p_image->store('images/items', 'public');
+                    $imagePaths[] = 'storage/' . $path;
+                    \Log::info('✅ ItemController: Image ' . $i . ' uploaded successfully to ' . $path);
                 } catch (\Exception $e) {
                     \Log::error('❌ ItemController: Failed to upload image ' . $i . ': ' . $e->getMessage());
                     continue;
                 }
             }
-            
             \Log::info('📸 ItemController: ' . count($imagePaths) . ' images uploaded successfully', ['paths' => $imagePaths]);
         }
 
