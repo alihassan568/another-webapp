@@ -102,13 +102,28 @@
                             <!-- Quick Actions -->
                             <div class="mt-6 space-y-3">
                                 @if($itemData['status'] == 'pending' || $itemData['status'] == 'rejected')
-                                <a href="{{ route('admin.item.accept', $itemData['id']) }}" 
-                                    class="w-full inline-flex items-center justify-center bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition duration-150 font-medium">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Approve Item
-                                </a>
+                                    @php
+                                        $isDisabled = !empty($itemData['commission_status']) && $itemData['commission_status'] != 'approved';
+                                    @endphp
+                                    
+                                    @if($isDisabled)
+                                        <button disabled 
+                                            class="w-full inline-flex items-center justify-center bg-gray-400 dark:bg-gray-600 text-gray-200 dark:text-gray-400 px-4 py-2.5 rounded-lg shadow-sm cursor-not-allowed opacity-60 font-medium"
+                                            title="Waiting for vendor commission approval">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Approve Item (Waiting for Vendor commission approval)
+                                        </button>
+                                    @else
+                                        <a href="{{ route('admin.item.accept', $itemData['id']) }}" 
+                                            class="w-full inline-flex items-center justify-center bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition duration-150 font-medium">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Approve Item
+                                        </a>
+                                    @endif
                                 @endif
                                 
                                 @if($itemData['status'] == 'pending' || $itemData['status'] == 'approved')
