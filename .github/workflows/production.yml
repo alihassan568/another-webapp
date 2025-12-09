@@ -215,3 +215,15 @@ jobs:
             if [ -f ../public/build/.vite/manifest.json ]; then
               mv ../public/build/.vite/manifest.json ../public/build/manifest.json
             fi
+
+      - name: Ensure storage symlink in public_html
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 65002
+          script: |
+            cd /home/u404772588/domains/another-go.com/public_html
+            rm -rf storage
+            ln -s ../storage/app/public storage
