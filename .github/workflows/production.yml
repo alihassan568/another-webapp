@@ -143,6 +143,10 @@ jobs:
             MAIL_ENCRYPTION=ssl
             MAIL_FROM_ADDRESS=info@another-go.com
             MAIL_FROM_NAME=Another-Go
+
+            STRIPE_KEY=${{ secrets.STRIPE_KEY }}
+            STRIPE_SECRET=${{ secrets.STRIPE_SECRET }}
+            STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
             EOF
             
             php artisan config:clear

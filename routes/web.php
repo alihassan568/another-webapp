@@ -7,6 +7,7 @@ use App\Http\Controllers\API\ForgotPasswordController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\CommissionController;
 use App\Http\Controllers\AdminCommissionController;
+use App\Http\Controllers\Admin\AdminRoleController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -55,6 +56,7 @@ Route::middleware('auth')->group(function () {
     
     Route::controller(ItemController::class)->group(function () {
         Route::get('/admin/items', 'index')->name('admin.items');
+        Route::get('admin/item/{id}', 'show')->name('admin.item.show');
         Route::get('admin/item/accept/{id}','accept')->name('admin.item.accept');
         Route::get('admin/item/reject/{id}','reject_item')->name('admin.item.reject.form');
         Route::post('admin/item/reject/{id}','reject')->name('admin.item.reject');
@@ -65,7 +67,40 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/item/commission/{id}','create')->name('admin.item.commission');
         Route::post('admin/item/commission/{id}','store')->name('admin.item.commission');
     });
+
+    // Admin Role Management Routes
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::resource('roles', AdminRoleController::class);
+    });
+
+    // Invite Routes
+    Route::prefix('admin/invites')->name('invite.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\InviteController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\InviteController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\InviteController::class, 'store'])->name('store');
+    });
+
+    // Vendor Management Routes
+    Route::prefix('admin/vendors')->name('admin.vendors.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\VendorController::class, 'index'])->name('index');
+        Route::get('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'show'])->name('show');
+        Route::patch('/{vendor}/block', [\App\Http\Controllers\Admin\VendorController::class, 'block'])->name('block');
+        Route::patch('/{vendor}/unblock', [\App\Http\Controllers\Admin\VendorController::class, 'unblock'])->name('unblock');
+    });
+
+    // Admin Activity Logs Routes
+    Route::prefix('admin/activity-logs')->name('admin.activity-logs.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AdminActivityLogController::class, 'index'])->name('index');
+        Route::get('/admin/{adminId}', [\App\Http\Controllers\AdminActivityLogController::class, 'byAdmin'])->name('by-admin');
+        Route::get('/inviter/{inviterId}', [\App\Http\Controllers\AdminActivityLogController::class, 'byInviter'])->name('by-inviter');
+        Route::get('/statistics', [\App\Http\Controllers\AdminActivityLogController::class, 'statistics'])->name('statistics');
+    });
 });
+
+// Public invite routes (no auth required)
+Route::get('/invite/accept/{token}', [\App\Http\Controllers\InviteController::class, 'accept'])->name('invite.accept');
+Route::post('/invite/accept/{token}', [\App\Http\Controllers\InviteController::class, 'confirmAccept'])->name('invite.confirm');
+Route::post('/invite/cancel/{token}', [\App\Http\Controllers\InviteController::class, 'cancel'])->name('invite.cancel');
 
 Route::get('admin/login',function() {
     return view('auth.admin-login');
