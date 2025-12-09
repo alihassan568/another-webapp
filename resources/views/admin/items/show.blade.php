@@ -221,30 +221,50 @@
                                     </svg>
                                     Commission Information
                                 </h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
-                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Commission Rate</label>
+                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active Commission</label>
                                         <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $itemData['commission'] }}%</p>
                                     </div>
+                                    
+                                    @if(!empty($itemData['requested_commission']) && $itemData['requested_commission'] > 0 && $itemData['commission_status'] == 'pending')
                                     <div>
-                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Commission Status</label>
+                                        <label class="text-xs font-medium text-yellow-600 dark:text-yellow-400 uppercase tracking-wider">Requested Commission</label>
+                                        <p class="mt-1 text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $itemData['requested_commission'] }}%</p>
+                                        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Awaiting vendor approval</p>
+                                    </div>
+                                    @endif
+                                    
+                                    <div>
+                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vendor Approval Status</label>
                                         <p class="mt-1">
                                             @if($itemData['commission_status'] == 'approved')
                                             <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                                ✓ Approved
+                                                ✓ Approved by Vendor
                                             </span>
                                             @elseif($itemData['commission_status'] == 'rejected')
                                             <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                                                ✕ Rejected
+                                                ✕ Rejected by Vendor
                                             </span>
                                             @else
                                             <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                                                ⏳ Pending
+                                                ⏳ Pending Vendor Approval
                                             </span>
                                             @endif
                                         </p>
                                     </div>
                                 </div>
+                                
+                                @if($itemData['commission_status'] == 'approved')
+                                <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                                    <p class="text-sm text-green-800 dark:text-green-300">
+                                        <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Vendor has approved the commission rate
+                                    </p>
+                                </div>
+                                @endif
                             </div>
 
                             <!-- Rejection Reason (if rejected) -->

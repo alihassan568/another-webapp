@@ -20,6 +20,7 @@ class ItemResource extends JsonResource
             'discounted_price' => $this->discounted_price,
             'discount_percentage' => $this->discount_percentage,
             'commission' => $this->commission,
+            'requested_commission' => $this->requested_commission,
             'commission_status' => $this->commission_status,
             'status' => $this->status,
             'image' => $this->images[0] ?? null, // First image for backward compatibility
