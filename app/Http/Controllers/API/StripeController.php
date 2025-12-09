@@ -27,12 +27,12 @@ class StripeController extends Controller
      */
     public function onboardVendor(Request $request)
     {
-        Log::info('Starting onboardVendor', ['user_id' => Auth::id(), 'ip' => $request->ip()]);
+        Log::info('Starting onboardVendor', ['user_id' => Auth::id(), 'ip' => $request->ip(), 'request_data' => $request->all()]);
         try {
             $user = Auth::user();
             
             if ($user->role !== 'business') {
-                Log::warning('User is not a business', ['user_id' => $user->id]);
+                Log::warning('User is not a business', ['user_id' => $user->id, 'role' => $user->role]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Only vendors can access this feature'
@@ -48,9 +48,10 @@ class StripeController extends Controller
             
             $businessProfile = \App\Models\BusinessProfile::where('user_id', $user->id)->first();
             $iban = $businessProfile ? $businessProfile->iban : null;
-            Log::info('Retrieved IBAN', ['iban_present' => !empty($iban)]);
+            Log::info('Retrieved IBAN', ['iban_present' => !empty($iban), 'iban' => $iban]);
 
             if (empty($iban)) {
+                Log::error('No IBAN found for vendor', ['user_id' => $user->id]);
                 return response()->json([
                     'success' => false,
                     'message' => 'No IBAN found for this vendor. Please update your profile.'
@@ -59,26 +60,26 @@ class StripeController extends Controller
 
             // Create or get Stripe account
             if (empty($user->stripe_account_id)) {
-                Log::info('Creating new Custom Account');
+                Log::info('Creating new Custom Account', ['user_id' => $user->id, 'email' => $user->email, 'country' => $country]);
                 $account = $this->stripeService->createCustomAccount(
                     $user->email,
                     $country
                 );
-                
+                Log::info('Stripe createCustomAccount result', ['account' => $account]);
                 $user->stripe_account_id = $account->id;
                 $user->save();
                 Log::info('Created Account', ['account_id' => $account->id]);
             } else {
                 Log::info('Retrieving existing account', ['account_id' => $user->stripe_account_id]);
                 $account = $this->stripeService->getAccount($user->stripe_account_id);
-                
+                Log::info('Stripe getAccount result', ['account' => $account]);
                 if ($account->type !== 'custom') {
                     Log::info('Existing account is not custom, creating new one', ['old_type' => $account->type]);
                     $account = $this->stripeService->createCustomAccount(
                         $user->email,
                         $country
                     );
-                    
+                    Log::info('Stripe createCustomAccount result (recreate)', ['account' => $account]);
                     $user->stripe_account_id = $account->id;
                     $user->save();
                 }
@@ -89,7 +90,7 @@ class StripeController extends Controller
             $firstName = $parts[0];
             $lastName = isset($parts[1]) ? $parts[1] : 'Vendor';
 
-            Log::info('Updating Account Details', ['first_name' => $firstName, 'last_name' => $lastName]);
+            Log::info('Updating Account Details', ['first_name' => $firstName, 'last_name' => $lastName, 'account_id' => $account->id]);
             $this->stripeService->updateCustomAccount($account->id, [
                 'business_profile' => [
                     'mcc' => '5812', 
@@ -117,11 +118,11 @@ class StripeController extends Controller
 
             // Add Bank Account
             try {
-                Log::info('Adding External Account');
+                Log::info('Adding External Account', ['account_id' => $account->id, 'iban' => $iban]);
                 $this->stripeService->addExternalAccount($account->id, $iban);
-                Log::info('External Account Added');
+                Log::info('External Account Added', ['account_id' => $account->id]);
             } catch (\Exception $e) {
-                Log::warning('Failed to add external account: ' . $e->getMessage());
+                Log::warning('Failed to add external account', ['error' => $e->getMessage(), 'account_id' => $account->id, 'iban' => $iban]);
                 
                 // Fallback for Test Mode: If the IBAN is invalid for test mode, use a valid Test IBAN
                 if (str_contains($e->getMessage(), 'test bank account number')) {
@@ -130,15 +131,15 @@ class StripeController extends Controller
                         // Valid Test IBAN for Cyprus (from Stripe error message)
                         $testIban = 'CY17002001280000001200527600'; 
                         $this->stripeService->addExternalAccount($account->id, $testIban);
-                        Log::info('External Account Added (Test Fallback)');
+                        Log::info('External Account Added (Test Fallback)', ['account_id' => $account->id, 'test_iban' => $testIban]);
                     } catch (\Exception $ex) {
-                        Log::error('Test IBAN Fallback Failed: ' . $ex->getMessage());
+                        Log::error('Test IBAN Fallback Failed', ['error' => $ex->getMessage(), 'account_id' => $account->id, 'test_iban' => $testIban]);
                     }
                 }
             }
 
             // Agree to Terms
-            Log::info('Agreeing to Terms');
+            Log::info('Agreeing to Terms', ['account_id' => $account->id]);
             $this->stripeService->agreeToTerms($account->id, $request->ip());
 
             // Mark as complete locally
@@ -146,7 +147,7 @@ class StripeController extends Controller
             $user->stripe_onboarded_at = now();
             $user->save();
 
-            Log::info('Onboarding Complete');
+            Log::info('Onboarding Complete', ['user_id' => $user->id, 'account_id' => $account->id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Stripe account connected successfully',
@@ -155,7 +156,7 @@ class StripeController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Onboarding error: ' . $e->getMessage());
+            Log::error('Onboarding error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString(), 'user_id' => Auth::id(), 'request_data' => $request->all()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to connect Stripe account',
@@ -228,9 +229,14 @@ class StripeController extends Controller
 
         try {
             $user = Auth::user();
-            
+            // If no Stripe account, create one first
             if (empty($user->stripe_account_id)) {
-                return response()->json(['success' => false, 'message' => 'Stripe account not found'], 404);
+                // Use user's country if available, else default to CY
+                $country = $user->country ?? 'CY';
+                $account = $this->stripeService->createCustomAccount($user->email, $country);
+                $user->stripe_account_id = $account->id;
+                $user->save();
+                Log::info('Stripe account created during bank update', ['user_id' => $user->id, 'account_id' => $account->id]);
             }
 
             // Update Stripe

@@ -35,7 +35,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'stripe_status',
         'stripe_onboarded_at',
         'charges_enabled',
-        'payouts_enabled'
+        'payouts_enabled',
+        'invited_by_user_id'
     ];
 
     /**
@@ -79,6 +80,42 @@ class User extends Authenticatable implements MustVerifyEmail
     public function payouts()
     {
         return $this->hasMany(Payout::class, 'vendor_id');
+    }
+
+    /**
+     * Get the user who invited this user
+     */
+    public function invitedBy()
+    {
+        return $this->belongsTo(User::class, 'invited_by_user_id');
+    }
+
+    /**
+     * Get users invited by this user
+     */
+    public function invitedUsers()
+    {
+        return $this->hasMany(User::class, 'invited_by_user_id');
+    }
+
+    /**
+     * Get activity logs for this user
+     */
+    public function activityLogs()
+    {
+        return $this->hasMany(AdminActivityLog::class, 'admin_user_id');
+    }
+
+    /**
+     * Get activity logs for users invited by this user
+     */
+    public function invitedUsersActivityLogs()
+    {
+        return AdminActivityLog::whereIn('admin_user_id', function($query) {
+            $query->select('id')
+                ->from('users')
+                ->where('invited_by_user_id', $this->id);
+        });
     }
 
     /**

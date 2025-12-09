@@ -35,12 +35,15 @@ class OrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
+        Log::info('[OrderController] createPaymentIntent called', ['user_id' => Auth::id(), 'request_data' => $request->all()]);
         try {
             DB::beginTransaction();
+            Log::info('[OrderController] Transaction started');
 
             $user = Auth::user();
             $items = $request->items;
             $orderNumber = mt_rand(1000000, 9999999);
+            Log::info('[OrderController] User and items loaded', ['user_id' => $user->id, 'items' => $items, 'order_number' => $orderNumber]);
 
             // Default commission rate (admin configurable)
             $defaultCommissionRate = CommissionSetting::getDefaultRate();
@@ -109,6 +112,7 @@ class OrderController extends Controller
             $paymentIntents = [];
 
             foreach ($vendorOrders as $vendorId => $vendorData) {
+                Log::info('[OrderController] Processing vendor', ['vendor_id' => $vendorId, 'vendor_data' => $vendorData]);
                 $vendor = $vendorData['vendor'];
 
                 // Calculate Stripe Fees (for tracking only - Stripe deducts this automatically)
@@ -155,6 +159,12 @@ class OrderController extends Controller
                 $amountInCents = (int) ($vendorData['total'] * 100);
                 $commissionInCents = (int) ($totalCommission * 100);
 
+                Log::info('[OrderController] Creating Stripe PaymentIntent', [
+                    'amount' => $amountInCents,
+                    'commission' => $commissionInCents,
+                    'vendor_stripe_account_id' => $vendor->stripe_account_id,
+                    'order_id' => $order->id
+                ]);
                 $paymentIntent = $this->stripeService->createPaymentIntent(
                     $amountInCents,
                     'usd',
@@ -167,6 +177,7 @@ class OrderController extends Controller
                         'vendor_id' => $vendor->id,
                     ]
                 );
+                Log::info('[OrderController] Stripe PaymentIntent created', ['payment_intent_id' => $paymentIntent->id]);
 
                 $order->stripe_payment_intent_id = $paymentIntent->id;
                 $order->save();
@@ -196,6 +207,7 @@ class OrderController extends Controller
                 ];
             }
 
+            Log::info('[OrderController] All PaymentIntents created, committing transaction.');
             DB::commit();
 
             return $this->success([
@@ -207,12 +219,12 @@ class OrderController extends Controller
             ], 'Payment intent created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Payment Intent Creation Failed', [
+            Log::error('[OrderController] Payment Intent Creation Failed', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
             ]);
-
             return $this->error('Failed to create payment intent: ' . $e->getMessage(), 500);
         }
     }

@@ -87,6 +87,14 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{vendor}/block', [\App\Http\Controllers\Admin\VendorController::class, 'block'])->name('block');
         Route::patch('/{vendor}/unblock', [\App\Http\Controllers\Admin\VendorController::class, 'unblock'])->name('unblock');
     });
+
+    // Admin Activity Logs Routes
+    Route::prefix('admin/activity-logs')->name('admin.activity-logs.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AdminActivityLogController::class, 'index'])->name('index');
+        Route::get('/admin/{adminId}', [\App\Http\Controllers\AdminActivityLogController::class, 'byAdmin'])->name('by-admin');
+        Route::get('/inviter/{inviterId}', [\App\Http\Controllers\AdminActivityLogController::class, 'byInviter'])->name('by-inviter');
+        Route::get('/statistics', [\App\Http\Controllers\AdminActivityLogController::class, 'statistics'])->name('statistics');
+    });
 });
 
 // Public invite routes (no auth required)

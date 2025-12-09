@@ -9,6 +9,7 @@ use App\Http\Resources\RoleResource;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Modules\User\Enums\RoleType;
+use App\Traits\TracksAdminActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,6 +18,7 @@ use Inertia\Response;
 
 class RoleController extends Controller
 {
+    use TracksAdminActivity;
     public function index(): Response
     {
         Gate::authorize('viewAny', Role::class);
@@ -53,6 +55,9 @@ class RoleController extends Controller
 
         $permissions = collect($request->permissions)->pluck('name')->toArray();
         $role->syncPermissions($permissions);
+
+        // Log the role creation activity
+        $this->logRoleCreation($role->id, $role->name, $permissions);
 
         return redirect()->route('roles.index');
     }
@@ -96,6 +101,9 @@ class RoleController extends Controller
 
         $permissions = collect($request->permissions)->pluck('name')->toArray();
         $role->syncPermissions($permissions);
+
+        // Log the role update activity
+        $this->logRoleUpdate($role->id, $role->name, $permissions);
 
         return redirect()->route('roles.index');
     }

@@ -9,17 +9,19 @@ use Illuminate\Http\Request;
 
 class VendorController extends Controller
 {
-    /**
-     * Display a listing of vendors.
-     */
+    use \App\Traits\TracksAdminActivity;
     public function index(Request $request)
     {
+        $this->logActivity(
+            action: 'list_vendors',
+            description: 'Viewed vendor list',
+            actionType: 'viewed',
+            targetType: 'vendor',
+            metadata: ['search' => $request->search ?? '', 'status' => $request->status ?? 'all']
+        );
         abort_unless(auth()->user()->hasPermissionTo(Permissions::CAN_LIST_VENDORS), 403);
-
         $query = User::where('role', 'business')
             ->latest();
-
-        // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -52,6 +54,15 @@ class VendorController extends Controller
      */
     public function show(User $vendor)
     {
+        // Log vendor view activity
+        $this->logActivity(
+            action: 'view_vendor',
+            description: "Viewed vendor: {$vendor->name}",
+            actionType: 'viewed',
+            targetId: $vendor->id,
+            targetType: 'vendor',
+            metadata: ['vendor_name' => $vendor->name, 'vendor_email' => $vendor->email]
+        );
         // Ensure the user is actually a vendor
         if ($vendor->role !== 'business') {
             abort(404, 'Vendor not found');
@@ -103,6 +114,16 @@ class VendorController extends Controller
             'blocked_at' => now(),
         ]);
 
+        // Log vendor block activity
+        $this->logActivity(
+            action: 'block_vendor',
+            description: "Blocked vendor: {$vendor->name}",
+            actionType: 'blocked',
+            targetId: $vendor->id,
+            targetType: 'vendor',
+            metadata: ['vendor_name' => $vendor->name, 'vendor_email' => $vendor->email]
+        );
+
         return redirect()->back()->with('success', 'Vendor has been blocked successfully.');
     }
 
@@ -125,6 +146,16 @@ class VendorController extends Controller
         $vendor->update([
             'blocked_at' => null,
         ]);
+
+        // Log vendor unblock activity
+        $this->logActivity(
+            action: 'unblock_vendor',
+            description: "Unblocked vendor: {$vendor->name}",
+            actionType: 'unblocked',
+            targetId: $vendor->id,
+            targetType: 'vendor',
+            metadata: ['vendor_name' => $vendor->name, 'vendor_email' => $vendor->email]
+        );
 
         return redirect()->back()->with('success', 'Vendor has been unblocked successfully.');
     }

@@ -143,6 +143,10 @@ jobs:
             MAIL_ENCRYPTION=ssl
             MAIL_FROM_ADDRESS=info@another-go.com
             MAIL_FROM_NAME=Another-Go
+
+            STRIPE_KEY=pk_live_51QpFFNLWetA22KenLFlnm3RHpK6cjyBDafzolvJxfPYYu4mebyRjJNMt3v6WPmjwrjhsNgNcLlMTR74oIuxUGbTe00o7cTFFBx
+            STRIPE_SECRET=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
+            STRIPE_WEBHOOK_SECRET=whsec_f6RGwgDcABx9fnDdQyQHZoTTmPnpkrs4
             EOF
             
             php artisan config:clear

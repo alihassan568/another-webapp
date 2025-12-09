@@ -168,7 +168,14 @@ class StripeService
     public function createPaymentIntent($amount, $currency, $applicationFee, $destination, array $metadata = [])
     {
         try {
-            return PaymentIntent::create([
+            Log::info('[StripeService] Creating PaymentIntent', [
+                'amount' => $amount,
+                'currency' => $currency,
+                'application_fee_amount' => $applicationFee,
+                'destination' => $destination,
+                'metadata' => $metadata
+            ]);
+            $intent = PaymentIntent::create([
                 'amount' => $amount,
                 'currency' => $currency,
                 'application_fee_amount' => $applicationFee,
@@ -181,11 +188,15 @@ class StripeService
                     'allow_redirects' => 'never',
                 ],
             ]);
+            Log::info('[StripeService] PaymentIntent created', ['payment_intent_id' => $intent->id]);
+            return $intent;
         } catch (ApiErrorException $e) {
-            Log::error('Stripe Payment Intent Creation Failed', [
+            Log::error('[StripeService] Payment Intent Creation Failed', [
                 'amount' => $amount,
                 'destination' => $destination,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'metadata' => $metadata
             ]);
             throw $e;
         }
