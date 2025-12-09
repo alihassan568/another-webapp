@@ -143,6 +143,8 @@ jobs:
             MAIL_ENCRYPTION=ssl
             MAIL_FROM_ADDRESS=info@another-go.com
             MAIL_FROM_NAME=Another-Go
+            
+            ADMIN_EMAIL=info@another-go.com
 
             STRIPE_KEY=${{ secrets.STRIPE_KEY }}
             STRIPE_SECRET=${{ secrets.STRIPE_SECRET }}
@@ -175,13 +177,21 @@ jobs:
             php artisan view:cache
             php artisan config:cache
             
-            echo "Setting up storage symlink and directories..."
+            echo "Setting up storage directories and permissions..."
+            # Create storage link (public/storage -> ../storage/app/public)
             php artisan storage:link || echo "Storage link already exists"
+            
+            # Create image directories in actual storage location
             mkdir -p storage/app/public/images/items
-            chmod -R 777 storage/app/public/images/items
-            chmod -R 777 public/storage/images/items
-            chmod -R 775 storage
-            chmod -R 775 public/storage
+            mkdir -p storage/app/public/images/categories
+            mkdir -p storage/app/public/images/users
+            
+            # Set permissions on actual storage directories (not symlinks)
+            chmod -R 755 storage
+            chmod -R 755 storage/app/public
+            chmod -R 755 storage/app/public/images
+            
+            echo "✅ Storage setup complete"
             
             echo "Deployment completed - check logs if database connection failed"
 
@@ -225,5 +235,55 @@ jobs:
           port: 65002
           script: |
             cd /home/u404772588/domains/another-go.com/public_html
+            
+            echo "Setting up storage symlink in public_html..."
+            # Remove old symlink if exists
             rm -rf storage
+            
+            # Create symlink: public_html/storage -> ../storage/app/public
             ln -s ../storage/app/public storage
+            
+            # Verify symlink
+            echo "Symlink created:"
+            ls -la storage | head -n 1
+            
+            echo "✅ Storage symlink configured"
+      
+      - name: Verify Deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 65002
+          script: |
+            cd /home/u404772588/domains/another-go.com
+            
+            echo ""
+            echo "=== 📋 Deployment Verification ==="
+            echo ""
+            
+            echo "1️⃣ Checking symlinks..."
+            ls -la public_html/storage | head -n 1
+            
+            echo ""
+            echo "2️⃣ Checking storage directories..."
+            ls -la storage/app/public/images/ || echo "Warning: Images directory not found"
+            
+            echo ""
+            echo "3️⃣ Checking permissions..."
+            stat -c "%a %n" storage/app/public/images/items 2>/dev/null || echo "Items directory permissions: N/A"
+            
+            echo ""
+            echo "4️⃣ Testing image URL access..."
+            echo "test-deployment" > storage/app/public/images/test-deploy.txt
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://another-go.com/storage/images/test-deploy.txt)
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Image access test PASSED (HTTP $HTTP_CODE)"
+            else
+              echo "⚠️  Image access test FAILED (HTTP $HTTP_CODE)"
+            fi
+            rm storage/app/public/images/test-deploy.txt 2>/dev/null
+            
+            echo ""
+            echo "✅ Deployment verification complete"

@@ -250,21 +250,11 @@ class ItemController extends Controller
                             continue;
                         }
                         
-                        $name = time() . '_' . $i . '_' . rand(1000, 9999);
-                        $extension = $p_image->extension();
-                        $fileName = md5($name . $p_image->getClientOriginalName());
-                        $fullPath2 = $fileName . '.' . $extension;
+                        // Use Laravel storage disk (same as store() method)
+                        $path = $p_image->store('images/items', 'public');
+                        $newImages[] = 'storage/' . $path;
                         
-                        // Ensure directory exists
-                        $uploadPath = public_path('storage/images/items');
-                        if (!file_exists($uploadPath)) {
-                            mkdir($uploadPath, 0755, true);
-                        }
-                        
-                        $p_image->move($uploadPath, $fullPath2);
-                        $newImages[] = 'storage/images/items/' . $fullPath2;
-                        
-                        \Log::info('✅ ItemController: Image ' . $i . ' uploaded successfully');
+                        \Log::info('✅ ItemController: Image ' . $i . ' uploaded successfully to ' . $path);
                     } catch (\Exception $e) {
                         \Log::error('❌ ItemController: Failed to upload image ' . $i . ': ' . $e->getMessage());
                         continue;
