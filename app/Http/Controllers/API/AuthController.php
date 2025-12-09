@@ -234,7 +234,7 @@ class AuthController extends Controller
             'user_id' => $userId
         ]);
 
-        $link = env('APP_URL').'/email/verification'.'?id='.$userId.'&token='.$token;
+        $link = url('/email/verification?id='.$userId.'&token='.$token);
 
         Mail::to($email)->queue(new VerificationMail($link));
 
