@@ -103,17 +103,34 @@ class AuthController extends Controller
 
     public function vender_signup(Request $request)
     {
-        $path = null;
-        // Manually check if email already exists
-        if (User::where('email', $request->email)->exists()) {
-            return $this->error('Email already exists.', 422);
-        }
+        try {
+            // Log incoming request
+            \Log::info('Vendor signup request', $request->all());
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed'
-        ]);
+            $path = null;
+            // Manually check if email already exists
+            if (User::where('email', $request->email)->exists()) {
+                return $this->error('Email already exists.', 422);
+            }
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:6|confirmed',
+                'phone' => 'required|string',
+                'address' => 'nullable|string',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
+                'business_type' => 'required|string',
+                'owner_name' => 'required|string',
+                'opening_time' => 'nullable|string',
+                'close_time' => 'nullable|string',
+                'bank_title' => 'nullable|string',
+                'bank_name' => 'nullable|string',
+                'iban' => 'nullable|string',
+            ]);
+            
+            \Log::info('Validation passed');
 
         if ($request->hasFile('image')) {
             // upload photo
@@ -128,23 +145,25 @@ class AuthController extends Controller
             $path = 'storage/images/vender/' . $fullPath2;
         }
 
-        // Extract country code from phone number
-        $country = \App\Helpers\CountryHelper::extractCountryFromPhone($request->phone);
+            \Log::info('Creating user');
+            
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'role' => 'business',
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'image' => $path
+            ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-            'role' => 'business',
-            'phone' => $request->phone,
-            'country' => $country,
-            'address' => $request->address,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'image' => $path
-        ]);
+            \Log::info('User created', ['user_id' => $user->id]);
 
         if ($user) {
+            \Log::info('Creating business profile');
+            
             $business = BusinessProfile::create([
                 'business_type' => $request->business_type,
                 'owner_name' => $request->owner_name,
@@ -159,16 +178,27 @@ class AuthController extends Controller
             $user->close_time = $business->close_time ?? null;
         }
 
-        // $token = $user->createToken('auth_token')->plainTextToken;
+            // $token = $user->createToken('auth_token')->plainTextToken;
 
-        $this->sendEmailVerificationOtp($user->id,$user->email);
+            $this->sendEmailVerificationOtp($user->id,$user->email);
 
-        return $this->success([], 'We’ve sent a One-Time Password (OTP) to your verifiy email address.Please check your email and use the OTP to verifiy your email');
+            return $this->success([], 'We have sent a One-Time Password (OTP) to your verify email address. Please check your email and use the OTP to verify your email');
 
-        // return $this->success([
-        //     'user' => $user,
-        //     'token' => $token
-        // ], 'User registered successfully');
+            // return $this->success([
+            //     'user' => $user,
+            //     'token' => $token
+            // ], 'User registered successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Vendor signup validation error', ['errors' => $e->errors()]);
+            return $this->error('Validation failed: ' . json_encode($e->errors()), 422);
+        } catch (\Exception $e) {
+            \Log::error('Vendor signup error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            return $this->error('Registration failed: ' . $e->getMessage(), 500);
+        }
     }
 
     public function vender_login(Request $request)
@@ -236,7 +266,12 @@ class AuthController extends Controller
 
         $link = url('/email/verification?id='.$userId.'&token='.$token);
 
-        Mail::to($email)->queue(new VerificationMail($link));
+        try {
+            Mail::to($email)->send(new VerificationMail($link));
+            \Log::info('Email sent successfully to: ' . $email);
+        } catch (\Exception $e) {
+            \Log::error('Email sending failed: ' . $e->getMessage());
+        }
 
         return true;
     }
