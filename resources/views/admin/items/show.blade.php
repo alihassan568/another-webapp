@@ -163,14 +163,14 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Business Name</label>
-                                        <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $itemData['user']['name'] ?? 'N/A' }}</p>
+                                        <p class="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ $itemData['user']['business_name'] ?? 'N/A' }}</p>
                                     </div>
                                     <div>
-                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vendor ID</label>
-                                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">#{{ $itemData['user']['id'] ?? 'N/A' }}</p>
+                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vendor Name</label>
+                                        <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $itemData['user']['name'] ?? 'N/A' }}</p>
                                     </div>
                                     <div class="md:col-span-2">
-                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</label>
+                                        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Vendor Email</label>
                                         <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $itemData['user']['email'] ?? 'N/A' }}</p>
                                     </div>
                                 </div>
