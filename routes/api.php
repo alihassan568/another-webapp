@@ -17,6 +17,7 @@ use App\Http\Controllers\API\CommissionController;
 use App\Http\Controllers\API\StripeController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\BankController;
+use App\Http\Controllers\API\BankAccountController;
 use App\Models\User;
 
 Route::get('run-migrate', function () {
@@ -58,6 +59,12 @@ Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 
 Route::get('/banks', [BankController::class, 'listBanks']);
+Route::get('/countries', function() {
+    return response()->json([
+        'success' => true,
+        'countries' => \App\Helpers\CountryHelper::getAllCountries()
+    ]);
+});
 
 Route::post('stripe/webhook', [StripeController::class, 'handleWebhook']);
 
@@ -76,7 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('{id}', [SubCategoryController::class, 'destroy']);
     });
 
-    Route::prefix('items')->group(function () {
+    Route::prefix('items')->middleware('vendor.blocked')->group(function () {
         Route::get('/', [ItemController::class, 'index']);
         Route::post('/', [ItemController::class, 'store']);
         Route::get('{id}', [ItemController::class, 'show']);
@@ -84,14 +91,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('delete/{id}', [ItemController::class, 'destroy']);
     });
 
-    Route::prefix('item/discount')->group(function () {
+    Route::prefix('item/discount')->middleware('vendor.blocked')->group(function () {
         Route::get('/remove/{id}', [ItemDiscountController::class, 'remove_discount']);
         Route::post('/add', [ItemDiscountController::class, 'add_discount']);
     });
 
     Route::prefix('order')->group(function () {
         Route::post('/place', [OrderController::class, 'place_order']);
-        Route::get('/venders', [OrderController::class, 'get_vender_orders']);
+        Route::get('/venders', [OrderController::class, 'get_vender_orders'])->middleware('vendor.blocked');
         Route::get('/users', [OrderController::class, 'get_user_orders']);
         Route::post('/update/status', [OrderController::class, 'update_order_status']);
     });
@@ -129,7 +136,15 @@ Route::prefix('get/businesses')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('vendor/stripe')->middleware(['auth:sanctum', 'vendor'])->group(function () {
+    // Bank Account Management Routes
+    Route::prefix('vendor/bank-account')->middleware(['auth:sanctum', 'vendor', 'vendor.blocked'])->group(function () {
+        Route::post('/setup', [BankAccountController::class, 'setupBankAccount']);
+        Route::get('/', [BankAccountController::class, 'getBankAccount']);
+        Route::post('/validate-iban', [BankAccountController::class, 'validateIban']);
+        Route::delete('/delete', [BankAccountController::class, 'deleteBankAccount']);
+    });
+
+    Route::prefix('vendor/stripe')->middleware(['auth:sanctum', 'vendor', 'vendor.blocked'])->group(function () {
         Route::post('/onboard', [StripeController::class, 'onboardVendor']);
         Route::get('/status', [StripeController::class, 'getAccountStatus']);
         Route::get('/dashboard', [StripeController::class, 'getDashboardLink']);

@@ -14,58 +14,76 @@ class ItemController extends Controller
 {
     public function index(Request $request)
     {
+        // Get filter parameters from request
         $status = $request->query('status', 'all');
+        $search = $request->query('search', '');
+        $dateFrom = $request->query('date_from', '');
+        $dateTo = $request->query('date_to', '');
 
+        // Build query with all filters
         $items = Item::with('user')
             ->when($status !== 'all', function ($query) use ($status) {
                 return $query->where('status', $status);
             })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('category', 'like', "%{$search}%")
+                      ->orWhere('sub_category', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($subQuery) use ($search) {
+                          $subQuery->where('name', 'like', "%{$search}%")
+                                   ->orWhere('email', 'like', "%{$search}%")
+                                   ->orWhere('business_name', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->when($dateFrom, function ($query) use ($dateFrom) {
+                $query->whereDate('created_at', '>=', $dateFrom);
+            })
+            ->when($dateTo, function ($query) use ($dateTo) {
+                $query->whereDate('created_at', '<=', $dateTo);
+            })
             ->orderBy('id', 'desc')
-            ->paginate(20);
+            ->paginate(15);
 
         // Transform items using resource
         $items->getCollection()->transform(function ($item) {
             return (new ItemResource($item))->toArray(request());
         });
 
-        return view('admin.items.index', compact('items','status'));
+        // Append query parameters to pagination links
+        $items->appends([
+            'status' => $status,
+            'search' => $search,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+        ]);
+
+        return view('admin.items.index', compact('items', 'status'));
     }
 
     public function search(Request $request)
     { 
-        $req_status = $request->status;
+        // Redirect to index with query parameters instead
+        return redirect()->route('admin.items', [
+            'status' => $request->status ?? 'all',
+            'search' => $request->search ?? '',
+            'date_from' => $request->date_from ?? '',
+            'date_to' => $request->date_to ?? '',
+        ]);
+    }
 
-        $items = Item::with('user')
-        ->when($req_status !== 'all', function ($query) use ($req_status) {
-            return $query->where('status', $req_status);
-        })
-        ->when($request->filled('search'), function ($query) use ($request) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('category', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($subQuery) use ($search) {
-                      $subQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
-        })
-        ->when($request->filled('date_from'), function ($query) use ($request) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        })
-        ->when($request->filled('date_to'), function ($query) use ($request) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        })
-        ->orderBy('id', 'desc')
-        ->paginate(20);
-
-        $items->getCollection()->transform(function ($item) {
-            return new ItemResource($item);
-        });
-
-        $status = 'Search Result';
-
-        return view('admin.items.index', compact('items','status'));
+    /**
+     * Show detailed view of an item
+     */
+    public function show($id)
+    {
+        $item = Item::with('user')->findOrFail($id);
+        
+        // Transform item using resource
+        $itemData = (new ItemResource($item))->toArray(request());
+        
+        return view('admin.items.show', compact('itemData'));
     }
 
     /**

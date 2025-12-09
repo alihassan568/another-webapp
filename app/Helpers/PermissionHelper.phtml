@@ -1,0 +1,14 @@
+<?php
+namespace App\Helpers;
+
+use Illuminate\Support\Facades\Auth;
+
+class PermissionHelper
+{
+    public static function abortIfUnauthorized(string $permission): void
+    {
+        if (!Auth::user()?->can($permission)) {
+            abort(403, 'Unauthorized');
+        }
+    }
+}
