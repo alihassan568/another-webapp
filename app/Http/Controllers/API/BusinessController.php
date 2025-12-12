@@ -52,6 +52,8 @@ class BusinessController extends Controller
             $category = $request->query('category');
             $sub_category = $request->query('sub_category');
 
+            $is_surprise_bag = $request->query('is_surprise_bag');
+
             $result = Item::with(['comments.user'])
                 ->where('user_id', $filter->id)
                 ->where('status', '=', 'approved')
@@ -60,6 +62,14 @@ class BusinessController extends Controller
                 })
                 ->when($sub_category, function ($query, $sub_category) {
                     return $query->where('sub_category', $sub_category);
+                })
+                ->when($is_surprise_bag !== null, function ($query) use ($is_surprise_bag) {
+                    $isSurprise = filter_var($is_surprise_bag, FILTER_VALIDATE_BOOLEAN);
+                    if ($isSurprise) {
+                        $query->isSurpriseBag();
+                    } else {
+                        $query->notSurpriseBag();
+                    }
                 })
                 ->get();
 
@@ -103,6 +113,8 @@ class BusinessController extends Controller
         $category = $request->query('category');
         $sub_category = $request->query('sub_category');
 
+        $is_surprise_bag = $request->query('is_surprise_bag');
+
         $result = Item::with(['comments.user'])
             ->where('user_id', $vender_id)
             ->where('status', '=', 'approved')
@@ -111,6 +123,14 @@ class BusinessController extends Controller
             })
             ->when($sub_category, function ($query, $sub_category) {
                 return $query->where('sub_category', $sub_category);
+            })
+            ->when($is_surprise_bag !== null, function ($query) use ($is_surprise_bag) {
+                $isSurprise = filter_var($is_surprise_bag, FILTER_VALIDATE_BOOLEAN);
+                if ($isSurprise) {
+                    $query->isSurpriseBag();
+                } else {
+                    $query->notSurpriseBag();
+                }
             })
             ->get();
 

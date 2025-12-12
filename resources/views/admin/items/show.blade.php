@@ -41,6 +41,15 @@
                             Rejected
                         </span>
                         @endif
+                        
+                        @if(!empty($itemData['is_surprise_bag']) && $itemData['is_surprise_bag'])
+                        <span class="ml-2 inline-flex items-center px-4 py-2 text-sm font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                            Surprise Bag
+                        </span>
+                        @endif
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

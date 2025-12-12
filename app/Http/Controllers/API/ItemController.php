@@ -13,26 +13,35 @@ use Illuminate\Support\Facades\Mail;
 
 class ItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $category = $request->query('category');
         $sub_category = $request->query('sub_category');
-
+        $is_surprise_bag = $request->query('is_surprise_bag');
         // Include both approved AND pending items for vendors to see their submissions
-        $items = Item::with(['comments.user'])
-        ->where('user_id', Auth::id())
-        ->whereIn('status', ['approved', 'pending'])
-        ->when($category, function ($query,$category) {
+        $query = Item::with(['comments.user'])
+             ->where('user_id', Auth::id())
+             ->whereIn('status', ['approved', 'pending'])
+             ->orderBy('id', 'desc');
+
+        if ($category) {
             $query->where('category', $category);
-        })
-        ->when($sub_category, function ($query,$sub_category) {
+        }
+
+        if ($sub_category) {
             $query->where('sub_category', $sub_category);
-        })
-        ->orderBy('id', 'desc')
-        ->get();
+        }
+
+        if ($is_surprise_bag !== null) {
+            $isSurprise = filter_var($is_surprise_bag, FILTER_VALIDATE_BOOLEAN);
+            if ($isSurprise) {
+                $query->isSurpriseBag();
+            } else {
+                $query->notSurpriseBag();
+            }
+        }
+        
+        $items = $query->get();
 
         \Log::info('Items fetched for vendor', [
             'vendor_id' => Auth::id(),
@@ -51,9 +60,6 @@ class ItemController extends Controller
         return $this->success($response, 'items fetched successfully');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         \Log::info('📥 ItemController: store() called', [
@@ -126,6 +132,7 @@ class ItemController extends Controller
             'valid_until' => $request->valid_until,
             'pickup_start_time' => $request->pickup_start_time,
             'pickup_end_time' => $request->pickup_end_time,
+            'is_surprise_bag' => filter_var($request->is_surprise_bag, FILTER_VALIDATE_BOOLEAN),
             'user_id' => Auth::id()
         ]);
 
@@ -153,9 +160,6 @@ class ItemController extends Controller
         return $this->success($item, 'item created successfully');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $item = Item::where('id','=',$id);
@@ -163,9 +167,6 @@ class ItemController extends Controller
         return $this->success($item, 'item fetched successfully');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         \Log::info('📝 ItemController: update() called', [
@@ -201,6 +202,7 @@ class ItemController extends Controller
             $item->valid_until = $request->valid_until ?? 0;
             $item->pickup_start_time = $request->pickup_start_time ?? 0;
             $item->pickup_end_time = $request->pickup_end_time ?? 0;
+            $item->is_surprise_bag = filter_var($request->is_surprise_bag, FILTER_VALIDATE_BOOLEAN);
             $item->price = $validated['price'];
 
             // Handle images update

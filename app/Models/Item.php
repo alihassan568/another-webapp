@@ -28,17 +28,35 @@ class Item extends Model
         'commission',
         'requested_commission',
         'commission_status',
-        'status'
+        'commission_status',
+        'status',
+        'is_surprise_bag'
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'image' => 'array', // Cast JSON image column to array
+        'is_surprise_bag' => 'boolean',
     ];
 
     protected $appends = ['discounted_price', 'images'];
 
+    /**
+     * Scope a query to only include surprise bag items.
+     */
+    public function scopeIsSurpriseBag($query)
+    {
+        return $query->where('is_surprise_bag', true);
+    }
+
+    /**
+     * Scope a query to include only regular items (not surprise bags).
+     */
+    public function scopeNotSurpriseBag($query)
+    {
+        return $query->where('is_surprise_bag', false);
+    }
 
     public function getDiscountedPriceAttribute()
     {

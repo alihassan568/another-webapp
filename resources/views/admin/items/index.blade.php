@@ -48,6 +48,17 @@
                                         <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                                     </select>
                                 </div>
+                                
+                                <!-- Surprise Bag Filter Dropdown -->
+                                <div class="w-48">
+                                    <select
+                                        name="is_surprise_bag"
+                                        class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="all" {{ request('is_surprise_bag', 'all') == 'all' ? 'selected' : '' }}>All Types</option>
+                                        <option value="1" {{ request('is_surprise_bag') == '1' ? 'selected' : '' }}>Surprise Bags</option>
+                                        <option value="0" {{ request('is_surprise_bag') == '0' ? 'selected' : '' }}>Regular Items</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <!-- Second Row: Date Filters and Buttons -->
@@ -92,7 +103,7 @@
                             <!-- Results Info -->
                             <div class="text-sm text-gray-600 dark:text-gray-400">
                                 Showing {{ $items->firstItem() ?? 0 }} to {{ $items->lastItem() ?? 0 }} of {{ $items->total() }} items
-                                @if(request('search') || request('status') != 'all' || request('date_from') || request('date_to'))
+                                @if(request('search') || request('status') != 'all' || request('date_from') || request('date_to') || request('is_surprise_bag') != 'all')
                                     <span class="font-semibold">(Filtered)</span>
                                 @endif
                             </div>
@@ -121,6 +132,13 @@
                                     </td>
                                     <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                                         <div class="font-medium">{{ $item['name'] }}</div>
+                                        @if($item['is_surprise_bag'])
+                                        <div class="mt-1">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                                                Surprise Bag
+                                            </span>
+                                        </div>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                                         <div>{{ $item['category'] }}</div>

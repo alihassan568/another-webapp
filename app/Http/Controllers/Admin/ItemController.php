@@ -22,11 +22,15 @@ class ItemController extends Controller
         $search = $request->query('search', '');
         $dateFrom = $request->query('date_from', '');
         $dateTo = $request->query('date_to', '');
+        $isSurpriseBag = $request->query('is_surprise_bag', 'all');
 
         // Build query with all filters
         $items = Item::with('user')
             ->when($status !== 'all', function ($query) use ($status) {
                 return $query->where('status', $status);
+            })
+            ->when($isSurpriseBag !== 'all', function ($query) use ($isSurpriseBag) {
+                return $query->where('is_surprise_bag', $isSurpriseBag == '1');
             })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
@@ -60,6 +64,7 @@ class ItemController extends Controller
             'search' => $search,
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
+            'is_surprise_bag' => $isSurpriseBag,
         ]);
 
         return view('admin.items.index', compact('items', 'status'));
@@ -73,6 +78,7 @@ class ItemController extends Controller
             'search' => $request->search ?? '',
             'date_from' => $request->date_from ?? '',
             'date_to' => $request->date_to ?? '',
+            'is_surprise_bag' => $request->is_surprise_bag ?? 'all',
         ]);
     }
 

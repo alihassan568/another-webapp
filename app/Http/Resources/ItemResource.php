@@ -25,6 +25,7 @@ class ItemResource extends JsonResource
             'status' => $this->status,
             'image' => $this->images[0] ?? null, // First image for backward compatibility
             'images' => $this->images, // Array of all images
+            'is_surprise_bag' => (boolean) $this->is_surprise_bag,
             'rejection_reason' => $this->rejection_reason,
             'user' => [
                 'id' => $this->user?->id,
