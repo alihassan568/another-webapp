@@ -80,12 +80,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [\App\Http\Controllers\InviteController::class, 'store'])->name('store');
     });
 
-    // Vendor Management Routes
-    Route::prefix('admin/vendors')->name('admin.vendors.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\VendorController::class, 'index'])->name('index');
-        Route::get('/{vendor}', [\App\Http\Controllers\Admin\VendorController::class, 'show'])->name('show');
-        Route::patch('/{vendor}/block', [\App\Http\Controllers\Admin\VendorController::class, 'block'])->name('block');
-        Route::patch('/{vendor}/unblock', [\App\Http\Controllers\Admin\VendorController::class, 'unblock'])->name('unblock');
+    // User Management Routes
+    Route::prefix('admin/users')->name('admin.users.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('index');
+        Route::get('/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->name('show');
+        Route::patch('/{user}/block', [\App\Http\Controllers\Admin\UserController::class, 'block'])->name('block');
+        Route::patch('/{user}/unblock', [\App\Http\Controllers\Admin\UserController::class, 'unblock'])->name('unblock');
     });
 
     // Admin Activity Logs Routes

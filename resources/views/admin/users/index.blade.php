@@ -3,10 +3,10 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div>
                 <h2 class="font-bold text-3xl text-gray-900 dark:text-white leading-tight">
-                    {{ __('Vendor Management') }}
+                    {{ __('User Management') }}
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-2">
-                    View and manage all vendor accounts
+                    View and manage all user accounts
                 </p>
             </div>
         </div>
@@ -38,9 +38,9 @@
             @endif
 
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-6">
-                <form method="GET" action="{{ route('admin.vendors.index') }}" class="flex flex-col sm:flex-row gap-4">
+                <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col sm:flex-row gap-4">
                     <div class="flex-1">
-                        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Vendors</label>
+                        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Users</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,11 +57,22 @@
                     </div>
 
                     <div class="sm:w-48">
+                        <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role</label>
+                        <select id="role" 
+                                name="role"
+                                class="block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="all" {{ $role === 'all' ? 'selected' : '' }}>All Roles</option>
+                            <option value="user" {{ $role === 'user' ? 'selected' : '' }}>User</option>
+                            <option value="business" {{ $role === 'business' ? 'selected' : '' }}>Business</option>
+                        </select>
+                    </div>
+
+                    <div class="sm:w-48">
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
                         <select id="status" 
                                 name="status"
                                 class="block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="all" {{ $status === 'all' ? 'selected' : '' }}>All Vendors</option>
+                            <option value="all" {{ $status === 'all' ? 'selected' : '' }}>All Statuses</option>
                             <option value="active" {{ $status === 'active' ? 'selected' : '' }}>Active</option>
                             <option value="blocked" {{ $status === 'blocked' ? 'selected' : '' }}>Blocked</option>
                         </select>
@@ -79,13 +90,14 @@
                 </form>
             </div>
 
-            <!-- Vendors Table -->
+            <!-- Users Table -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Vendor</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">User</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Role</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Contact</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Location</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
@@ -94,36 +106,47 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            @forelse($vendors as $vendor)
+                            @forelse($users as $user)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-12 w-12">
-                                            @if($vendor->image)
-                                                <img class="h-12 w-12 rounded-full object-cover" src="{{ asset('storage/' . $vendor->image) }}" alt="{{ $vendor->name }}">
+                                            @if($user->image)
+                                                <img class="h-12 w-12 rounded-full object-cover" src="{{ asset('storage/' . $user->image) }}" alt="{{ $user->name }}">
                                             @else
                                                 <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                                                    <span class="text-white font-bold text-lg">{{ strtoupper(substr($vendor->name, 0, 1)) }}</span>
+                                                    <span class="text-white font-bold text-lg">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                                                 </div>
                                             @endif
                                         </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $vendor->name }}</div>
-                                            <div class="text-sm text-gray-500 dark:text-gray-400">ID: #{{ $vendor->id }}</div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400">ID: #{{ $user->id }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900 dark:text-white">{{ $vendor->email }}</div>
-                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $vendor->phone ?? 'N/A' }}</div>
+                                    @if($user->role == 'business')
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+                                            Business
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                            User
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-white">{{ $user->email }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ $user->phone ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900 dark:text-white max-w-xs truncate">
-                                        {{ $vendor->address ?? 'Not provided' }}
+                                        {{ $user->address ?? 'Not provided' }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($vendor->blocked_at)
+                                    @if($user->blocked_at)
                                         <span class="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 flex items-center w-fit">
                                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"></path>
@@ -140,12 +163,12 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $vendor->created_at->diffForHumans() }}
+                                    {{ $user->created_at->diffForHumans() }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center justify-end space-x-2">
                                         <!-- View Button -->
-                                        <a href="{{ route('admin.vendors.show', $vendor->id) }}" 
+                                        <a href="{{ route('admin.users.show', $user->id) }}" 
                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors"
                                            title="View Details">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,52 +178,52 @@
                                         </a>
 
                                         <!-- Block/Unblock Button -->
-                                        @if($vendor->blocked_at)
-                                            @if(auth()->user()->hasPermissionTo(\App\Modules\User\Enums\Permissions::CAN_UNBLOCK_VENDOR))
-                                            <form action="{{ route('admin.vendors.unblock', $vendor->id) }}" method="POST" class="inline">
+                                        @if($user->blocked_at)
+                                            {{-- @if(auth()->user()->hasPermissionTo(\App\Modules\User\Enums\Permissions::CAN_UNBLOCK_USER)) --}}
+                                            <form action="{{ route('admin.users.unblock', $user->id) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" 
-                                                        onclick="return confirm('Are you sure you want to unblock this vendor?')"
+                                                        onclick="return confirm('Are you sure you want to unblock this user?')"
                                                         class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 transition-colors"
-                                                        title="Unblock Vendor">
+                                                        title="Unblock User">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
                                                     </svg>
                                                 </button>
                                             </form>
-                                            @endif
+                                            {{-- @endif --}}
                                         @else
-                                            @if(auth()->user()->hasPermissionTo(\App\Modules\User\Enums\Permissions::CAN_BLOCK_VENDOR))
-                                            <form action="{{ route('admin.vendors.block', $vendor->id) }}" method="POST" class="inline">
+                                            {{-- @if(auth()->user()->hasPermissionTo(\App\Modules\User\Enums\Permissions::CAN_BLOCK_USER)) --}}
+                                            <form action="{{ route('admin.users.block', $user->id) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" 
-                                                        onclick="return confirm('Are you sure you want to block this vendor? They will not be able to access their account.')"
+                                                        onclick="return confirm('Are you sure you want to block this user? They will not be able to access their account.')"
                                                         class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
-                                                        title="Block Vendor">
+                                                        title="Block User">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
                                                     </svg>
                                                 </button>
                                             </form>
-                                            @endif
+                                            {{-- @endif --}}
                                         @endif
                                     </div>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center">
+                                <td colspan="7" class="px-6 py-12 text-center">
                                     <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                     </svg>
-                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Vendors Found</h3>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Users Found</h3>
                                     <p class="text-gray-500 dark:text-gray-400">
                                         @if($search)
-                                            No vendors match your search criteria.
+                                            No users match your search criteria.
                                         @else
-                                            There are no vendors registered yet.
+                                            There are no users registered yet.
                                         @endif
                                     </p>
                                 </td>
@@ -211,9 +234,9 @@
                 </div>
 
                 <!-- Pagination -->
-                @if($vendors->hasPages())
+                @if($users->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                    {{ $vendors->links() }}
+                    {{ $users->links() }}
                 </div>
                 @endif
             </div>
@@ -228,8 +251,8 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Vendors</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $vendors->total() }}</p>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $users->total() }}</p>
                         </div>
                     </div>
                 </div>
@@ -242,8 +265,8 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Vendors</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ \App\Models\User::where('role', 'business')->whereNull('blocked_at')->count() }}</p>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ \App\Models\User::whereNull('blocked_at')->count() }}</p>
                         </div>
                     </div>
                 </div>
@@ -256,8 +279,8 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Blocked Vendors</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ \App\Models\User::where('role', 'business')->whereNotNull('blocked_at')->count() }}</p>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Blocked Users</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ \App\Models\User::whereNotNull('blocked_at')->count() }}</p>
                         </div>
                     </div>
                 </div>

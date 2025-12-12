@@ -177,15 +177,15 @@
                             </div>
                         </a>
                         
-                        <a href="{{ route('admin.vendors.index') }}" class="flex items-center p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group">
+                        <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group">
                             <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mr-3">
                                 <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-semibold text-gray-900 dark:text-white">Manage Vendors</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">View and manage vendor accounts</p>
+                                <p class="font-semibold text-gray-900 dark:text-white">Manage Users</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">View and manage user accounts</p>
                             </div>
                         </a>
                     </div>
