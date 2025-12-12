@@ -27,7 +27,8 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed'
+            'password' => 'required|min:6|confirmed',
+            'country' => 'nullable|string'
         ]);
 
         if ($request->hasFile('image')) {
@@ -49,6 +50,7 @@ class AuthController extends Controller
             'password' => $validated['password'],
             'role' => 'user',
             'phone' => $request->phone,
+            'country' => $request->country,
             'address' => $request->address,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
@@ -121,6 +123,7 @@ class AuthController extends Controller
                 'address' => 'nullable|string',
                 'latitude' => 'nullable|numeric',
                 'longitude' => 'nullable|numeric',
+                'country' => 'nullable|string',
                 'business_type' => 'required|string',
                 'owner_name' => 'required|string',
                 'opening_time' => 'nullable|string',
@@ -153,6 +156,7 @@ class AuthController extends Controller
                 'password' => $validated['password'],
                 'role' => 'business',
                 'phone' => $request->phone,
+                'country' => $request->country,
                 'address' => $request->address,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,

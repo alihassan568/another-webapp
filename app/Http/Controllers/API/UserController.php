@@ -45,6 +45,7 @@ class UserController extends Controller
 
         if (!empty($user)) {
             $user->name = $request->name;
+            $user->country = $request->country;
             $user->phone = $request->phone;
             $user->address = $request->address;
             $user->latitude = $request->latitude;
@@ -76,6 +77,7 @@ class UserController extends Controller
 
         if (!empty($user)) {
             $user->name = $request->name;
+            $user->country = $request->country;
             $user->phone = $request->phone;
             $user->address = $request->address;
             $user->latitude = $request->latitude;
