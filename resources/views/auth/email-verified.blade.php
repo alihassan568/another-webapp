@@ -27,26 +27,5 @@
             Go to Login
         </a>
 
-        <!-- Additional Info -->
-        <p class="mt-6 text-sm text-gray-500">
-            You will be automatically redirected to the login page in <span id="countdown">5</span> seconds...
-        </p>
-    </div>
-
-    <script>
-        // Auto redirect after 5 seconds
-        let seconds = 5;
-        const countdownElement = document.getElementById('countdown');
-        
-        const countdown = setInterval(() => {
-            seconds--;
-            countdownElement.textContent = seconds;
-            
-            if (seconds <= 0) {
-                clearInterval(countdown);
-                window.location.href = "{{ route('login') }}";
-            }
-        }, 1000);
-    </script>
 </body>
 </html>
